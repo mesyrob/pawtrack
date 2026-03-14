@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, Image } from 'react-native'
 import { Pet } from '@/lib/types'
 import { calcAge } from '@/lib/utils'
-import { brutShadow, brutShadowSubtle } from '@/lib/theme'
+import { shadowMd, shadow } from '@/lib/theme'
 import { hapticSuccess } from '@/lib/haptics'
 import Button from '@/components/ui/Button'
 
@@ -28,18 +28,18 @@ export default function StepConfirmation({ pet, photoUri, onConfirm, onBack }: S
   return (
     <View className="gap-6">
       <View>
-        <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">Looks good?</Text>
+        <Text className="text-xl font-bold text-fg mb-1">Looks good?</Text>
         <Text className="text-muted text-sm">
           Review your pet's profile before saving.
         </Text>
       </View>
 
       {/* Pet card */}
-      <View className="bg-surface border-[2.5px] border-fg rounded-md p-5 gap-4" style={brutShadow}>
+      <View className="bg-surface rounded-2xl p-5 gap-4" style={shadowMd}>
         <View className="flex-row items-center gap-4">
           <View
-            className="w-16 h-16 bg-yellow rounded-lg items-center justify-center overflow-hidden"
-            style={brutShadowSubtle}
+            className="w-16 h-16 bg-yellow rounded-xl items-center justify-center overflow-hidden"
+            style={shadow}
           >
             {photoUri ? (
               <Image source={{ uri: photoUri }} className="w-full h-full" resizeMode="cover" />
@@ -48,14 +48,14 @@ export default function StepConfirmation({ pet, photoUri, onConfirm, onBack }: S
             )}
           </View>
           <View>
-            <Text className="font-mono text-2xl uppercase tracking-[2px] text-fg">{pet.name}</Text>
+            <Text className="text-2xl font-bold text-fg">{pet.name}</Text>
             <Text className="text-muted text-sm">
               {pet.breed} · {calcAge(pet.birthday)} old
             </Text>
           </View>
         </View>
 
-        <View className="border-t border-fg/20 pt-4">
+        <View className="border-t border-fg/[0.06] pt-4">
           <View className="flex-row flex-wrap gap-x-8 gap-y-3">
             {([
               ['Sex', pet.sex],
@@ -72,11 +72,11 @@ export default function StepConfirmation({ pet, photoUri, onConfirm, onBack }: S
         </View>
 
         {trackingOn.length > 0 && (
-          <View className="border-t border-fg/20 pt-3">
+          <View className="border-t border-fg/[0.06] pt-3">
             <Text className="text-[10px] font-semibold text-muted uppercase tracking-wide mb-2">Tracking</Text>
             <View className="flex-row flex-wrap gap-2">
               {trackingOn.map((t) => (
-                <View key={t} className="px-3 py-1.5 bg-green/20 rounded-lg">
+                <View key={t} className="px-3 py-1.5 bg-green/20 rounded-xl">
                   <Text className="text-[12px] font-semibold text-fg capitalize">{t}</Text>
                 </View>
               ))}

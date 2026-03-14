@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, Pressable, TextInput } from 'react-native'
 import { Sex, PetSize } from '@/lib/types'
-import { brutShadowSubtle, colors } from '@/lib/theme'
+import { shadow, colors } from '@/lib/theme'
 import { hapticTap } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -41,7 +41,7 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
   return (
     <View className="gap-6">
       <View>
-        <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">Pet details</Text>
+        <Text className="text-xl font-bold text-fg mb-1">Pet details</Text>
         <Text className="text-muted text-sm">A few more details to personalise tracking.</Text>
       </View>
 
@@ -75,7 +75,7 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
 
       {/* Weight with unit toggle */}
       <View className="gap-1.5">
-        <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">Current Weight (optional)</Text>
+        <Text className="text-[13px] font-semibold text-muted">Current Weight (optional)</Text>
         <View className="flex-row gap-2">
           <View className="flex-1">
             <TextInput
@@ -84,11 +84,11 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
               value={data.weight}
               onChangeText={(text) => onChange({ ...data, weight: text })}
               placeholderTextColor={colors.muted}
-              className="bg-surface border-[1.5px] border-fg/40 rounded-md px-3.5 py-3 text-[15px] text-fg"
-              style={brutShadowSubtle}
+              className="bg-surface border border-fg/[0.06] rounded-xl px-3.5 py-3 text-[15px] text-fg"
+              style={shadow}
             />
           </View>
-          <View className="flex-row bg-fg/5 rounded-lg overflow-hidden">
+          <View className="flex-row bg-fg/5 rounded-xl overflow-hidden">
             {(['kg', 'lbs'] as const).map((u) => (
               <Pressable
                 key={u}
@@ -96,7 +96,7 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
                   hapticTap()
                   onChange({ ...data, weightUnit: u })
                 }}
-                className={`px-5 justify-center rounded-lg ${data.weightUnit === u ? 'bg-fg' : ''}`}
+                className={`px-5 justify-center rounded-xl ${data.weightUnit === u ? 'bg-fg' : ''}`}
               >
                 <Text className={`text-[13px] font-semibold ${data.weightUnit === u ? 'text-bg' : 'text-fg/50'}`}>
                   {u}

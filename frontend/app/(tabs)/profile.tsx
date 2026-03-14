@@ -1,29 +1,42 @@
 import React from 'react'
-import { View, Text, ScrollView, Image, Pressable, Alert, ActivityIndicator } from 'react-native'
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { usePets } from '@/contexts/PetContext'
 import { calcAge, formatDate } from '@/lib/utils'
-import { colors, brutShadow, brutShadowSm, brutShadowSubtle } from '@/lib/theme'
-import { hapticTap } from '@/lib/haptics'
+import { colors, shadow, shadowMd } from '@/lib/theme'
 
 const speciesEmoji: Record<string, string> = {
-  dog: '🐶',
-  cat: '🐱',
-  rabbit: '🐰',
-  other: '🐾',
+  dog: '\uD83D\uDC36',
+  cat: '\uD83D\uDC31',
+  rabbit: '\uD83D\uDC30',
+  other: '\uD83D\uDC3E',
 }
 
 interface DetailRowProps {
   icon: keyof typeof Ionicons.glyphMap
   label: string
   value: string
+  isLast?: boolean
 }
 
-function DetailRow({ icon, label, value }: DetailRowProps) {
+function DetailRow({ icon, label, value, isLast = false }: DetailRowProps) {
   return (
-    <View className="flex-row items-center py-3.5 border-b border-fg/8">
-      <Ionicons name={icon} size={18} color={colors.muted} style={{ width: 28 }} />
+    <View
+      className={`flex-row items-center py-3.5 ${isLast ? '' : 'border-b border-fg/[0.04]'}`}
+    >
+      <Ionicons
+        name={icon}
+        size={18}
+        color={colors.muted}
+        style={{ width: 28 }}
+      />
       <Text className="text-[13px] text-muted flex-1">{label}</Text>
       <Text className="text-[14px] font-semibold text-fg">{value}</Text>
     </View>
@@ -46,7 +59,9 @@ export default function ProfilePage() {
   const logs = getLogsFor(activePet.id)
   const latestWeight = [...logs]
     .filter((l) => l.type === 'weight' && l.data?.weight)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+    .sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    )[0]
 
   const totalLogs = logs.length
 
@@ -54,14 +69,14 @@ export default function ProfilePage() {
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="pb-28"
+        contentContainerClassName="pb-32"
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Hero */}
         <View className="items-center pt-6 pb-5 px-5">
           <View
-            className="w-28 h-28 rounded-2xl items-center justify-center overflow-hidden border-[3px] border-fg bg-yellow"
-            style={brutShadow}
+            className="w-28 h-28 rounded-3xl items-center justify-center overflow-hidden bg-accent/10"
+            style={shadowMd}
           >
             {activePet.photoUrl ? (
               <Image
@@ -70,10 +85,12 @@ export default function ProfilePage() {
                 resizeMode="cover"
               />
             ) : (
-              <Text className="text-[56px]">{speciesEmoji[activePet.species] ?? '🐾'}</Text>
+              <Text className="text-[56px]">
+                {speciesEmoji[activePet.species] ?? '\uD83D\uDC3E'}
+              </Text>
             )}
           </View>
-          <Text className="font-mono text-[32px] uppercase tracking-[2px] text-fg mt-4 leading-tight">
+          <Text className="text-[28px] font-bold text-fg mt-4 leading-tight">
             {activePet.name}
           </Text>
           <Text className="text-[15px] text-muted mt-1">
@@ -82,29 +99,47 @@ export default function ProfilePage() {
 
           {/* Quick stats pills */}
           <View className="flex-row gap-2 mt-4">
-            <View className="px-3.5 py-1.5 bg-green/20 rounded-md border-[1.5px] border-fg/15">
-              <Text className="text-[12px] font-bold text-fg">{calcAge(activePet.birthday)}</Text>
-            </View>
-            <View className="px-3.5 py-1.5 bg-blue/20 rounded-md border-[1.5px] border-fg/15">
-              <Text className="text-[12px] font-bold text-fg capitalize">{activePet.sex}</Text>
-            </View>
-            <View className="px-3.5 py-1.5 bg-pink/20 rounded-md border-[1.5px] border-fg/15">
-              <Text className="text-[12px] font-bold text-fg capitalize">{activePet.size}</Text>
-            </View>
-            <View className="px-3.5 py-1.5 bg-yellow/30 rounded-md border-[1.5px] border-fg/15">
-              <Text className="text-[12px] font-bold text-fg">{totalLogs} logs</Text>
-            </View>
+            {[
+              {
+                label: calcAge(activePet.birthday),
+                bg: colors.green + '15',
+              },
+              {
+                label: activePet.sex === 'male' ? 'Male' : 'Female',
+                bg: colors.blue + '15',
+              },
+              {
+                label:
+                  activePet.size.charAt(0).toUpperCase() +
+                  activePet.size.slice(1),
+                bg: colors.pink + '15',
+              },
+              {
+                label: `${totalLogs} logs`,
+                bg: colors.yellow + '15',
+              },
+            ].map((pill) => (
+              <View
+                key={pill.label}
+                className="px-3.5 py-1.5 rounded-full"
+                style={{ backgroundColor: pill.bg }}
+              >
+                <Text className="text-[12px] font-semibold text-fg">
+                  {pill.label}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
 
         {/* Details Card */}
         <View className="px-5 mt-2">
-          <Text className="font-mono text-[11px] uppercase tracking-[2px] text-muted mb-3">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
             Details
           </Text>
           <View
-            className="bg-surface border-[2.5px] border-fg rounded-md px-4"
-            style={brutShadowSm}
+            className="bg-surface rounded-xl px-4"
+            style={shadow}
           >
             <DetailRow
               icon="calendar-outline"
@@ -124,7 +159,10 @@ export default function ProfilePage() {
             <DetailRow
               icon="resize-outline"
               label="Size"
-              value={activePet.size.charAt(0).toUpperCase() + activePet.size.slice(1)}
+              value={
+                activePet.size.charAt(0).toUpperCase() +
+                activePet.size.slice(1)
+              }
             />
             <DetailRow
               icon="color-palette-outline"
@@ -139,47 +177,75 @@ export default function ProfilePage() {
               />
             )}
             {activePet.vetClinic && (
-              <View className="flex-row items-center py-3.5">
-                <Ionicons name="medical-outline" size={18} color={colors.muted} style={{ width: 28 }} />
-                <Text className="text-[13px] text-muted flex-1">Vet Clinic</Text>
-                <Text className="text-[14px] font-semibold text-fg">{activePet.vetClinic}</Text>
-              </View>
+              <DetailRow
+                icon="medical-outline"
+                label="Vet Clinic"
+                value={activePet.vetClinic}
+                isLast
+              />
             )}
           </View>
         </View>
 
         {/* Tracking Config */}
         <View className="px-5 mt-6">
-          <Text className="font-mono text-[11px] uppercase tracking-[2px] text-muted mb-3">
+          <Text className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
             Tracking
           </Text>
           <View
-            className="bg-surface border-[2.5px] border-fg rounded-md px-4 py-1"
-            style={brutShadowSm}
+            className="bg-surface rounded-xl px-4 py-1"
+            style={shadow}
           >
             {[
-              { key: 'vaccinations' as const, label: 'Vaccinations', icon: 'medkit-outline' as const },
-              { key: 'deworming' as const, label: 'Deworming', icon: 'bug-outline' as const },
-              { key: 'fleaTick' as const, label: 'Flea & Tick', icon: 'shield-outline' as const },
-              { key: 'weight' as const, label: 'Weight', icon: 'fitness-outline' as const },
-              { key: 'symptoms' as const, label: 'Symptoms', icon: 'alert-circle-outline' as const },
+              {
+                key: 'vaccinations' as const,
+                label: 'Vaccinations',
+                icon: 'medkit-outline' as const,
+              },
+              {
+                key: 'deworming' as const,
+                label: 'Deworming',
+                icon: 'bug-outline' as const,
+              },
+              {
+                key: 'fleaTick' as const,
+                label: 'Flea & Tick',
+                icon: 'shield-outline' as const,
+              },
+              {
+                key: 'weight' as const,
+                label: 'Weight',
+                icon: 'fitness-outline' as const,
+              },
+              {
+                key: 'symptoms' as const,
+                label: 'Symptoms',
+                icon: 'alert-circle-outline' as const,
+              },
             ].map((item, index) => (
               <View
                 key={item.key}
-                className={`flex-row items-center py-3 ${index > 0 ? 'border-t border-fg/8' : ''}`}
+                className={`flex-row items-center py-3 ${index > 0 ? 'border-t border-fg/[0.04]' : ''}`}
               >
-                <Ionicons name={item.icon} size={18} color={colors.muted} style={{ width: 28 }} />
-                <Text className="text-[14px] text-fg flex-1">{item.label}</Text>
+                <Ionicons
+                  name={item.icon}
+                  size={18}
+                  color={colors.muted}
+                  style={{ width: 28 }}
+                />
+                <Text className="text-[14px] text-fg flex-1">
+                  {item.label}
+                </Text>
                 <View
-                  className="w-5 h-5 rounded items-center justify-center"
+                  className="w-5 h-5 rounded-full items-center justify-center"
                   style={{
                     backgroundColor: activePet.trackingConfig[item.key]
                       ? colors.green
-                      : colors.muted + '30',
+                      : colors.muted + '20',
                   }}
                 >
                   {activePet.trackingConfig[item.key] && (
-                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={13} color="#FFFFFF" />
                   )}
                 </View>
               </View>
@@ -188,12 +254,9 @@ export default function ProfilePage() {
         </View>
 
         {/* App Info */}
-        <View className="px-5 mt-6 items-center">
-          <Text className="font-mono text-[11px] uppercase tracking-[2px] text-muted">
+        <View className="px-5 mt-8 items-center">
+          <Text className="text-[11px] font-medium text-muted/60">
             PawTrack v1.0
-          </Text>
-          <Text className="text-[12px] text-muted/60 mt-1">
-            Made with love for {activePet.name}
           </Text>
         </View>
       </ScrollView>

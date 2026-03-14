@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import { brutShadowSm } from '@/lib/theme'
+import { shadow } from '@/lib/theme'
 
 interface StatBoxProps {
   label: string
@@ -9,21 +9,22 @@ interface StatBoxProps {
   color?: string
 }
 
-export default function StatBox({ label, value, sub, color = '#FFE03D' }: StatBoxProps) {
+export default function StatBox({ label, value, sub, color }: StatBoxProps) {
   return (
     <View
-      className="flex-1 border-[2.5px] border-fg rounded-md p-4 gap-1"
-      style={[brutShadowSm, { backgroundColor: color }]}
+      className="flex-1 bg-surface rounded-xl p-4 gap-1"
+      style={shadow}
     >
-      <Text className="text-[10px] font-semibold text-fg/60 uppercase tracking-wide">
+      <Text className="text-[11px] font-semibold text-muted uppercase tracking-wider">
         {label}
       </Text>
-      <Text className="font-mono text-2xl leading-none text-fg">
+      <Text
+        className="font-mono text-2xl leading-none"
+        style={color ? { color } : undefined}
+      >
         {value}
       </Text>
-      {sub && (
-        <Text className="text-[11px] text-fg/60">{sub}</Text>
-      )}
+      {sub && <Text className="text-[11px] text-muted">{sub}</Text>}
     </View>
   )
 }

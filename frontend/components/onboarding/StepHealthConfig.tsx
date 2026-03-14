@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import { brutShadowSubtle } from '@/lib/theme'
+import { shadowMd } from '@/lib/theme'
 import Input from '@/components/ui/Input'
 import Toggle from '@/components/ui/Toggle'
 import Button from '@/components/ui/Button'
@@ -33,13 +33,13 @@ export default function StepHealthConfig({ data, onChange, onNext, onBack }: Ste
   return (
     <View className="gap-6">
       <View>
-        <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">What to track</Text>
+        <Text className="text-xl font-bold text-fg mb-1">What to track</Text>
         <Text className="text-muted text-sm">
           Choose what to monitor. You can change this later.
         </Text>
       </View>
 
-      <View className="border-[1.5px] border-fg/20 rounded-lg p-4 bg-surface" style={brutShadowSubtle}>
+      <View className="border border-fg/[0.06] rounded-2xl p-4 bg-surface" style={shadowMd}>
         {trackingItems.map((item, index) => (
           <View
             key={item.key}

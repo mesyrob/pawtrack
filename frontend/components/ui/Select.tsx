@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, Pressable, Modal, ScrollView } from 'react-native'
-import { brutShadowSubtle, colors } from '@/lib/theme'
+import { Ionicons } from '@expo/vector-icons'
+import { colors, shadowLg } from '@/lib/theme'
 import { hapticSelect } from '@/lib/haptics'
 
 interface SelectOption {
@@ -17,41 +18,53 @@ interface SelectProps {
   error?: string
 }
 
-export default function Select({ label, options, value, onChange, placeholder, error }: SelectProps) {
+export default function Select({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder,
+  error,
+}: SelectProps) {
   const [open, setOpen] = useState(false)
   const selected = options.find((o) => o.value === value)
 
   return (
-    <View className="gap-1.5">
+    <View className="gap-2">
       {label && (
-        <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">
-          {label}
-        </Text>
+        <Text className="text-[13px] font-semibold text-muted">{label}</Text>
       )}
       <Pressable
         onPress={() => {
           hapticSelect()
           setOpen(true)
         }}
-        style={brutShadowSubtle}
-        className={`bg-surface border-[1.5px] rounded-md px-3.5 py-3 flex-row items-center justify-between ${error ? 'border-red-600' : 'border-fg/40'}`}
+        style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+        className={`bg-field-bg border rounded-lg px-4 py-3.5 flex-row items-center justify-between ${
+          error ? 'border-red-500' : 'border-fg/[0.06]'
+        }`}
       >
-        <Text className={`text-[15px] ${selected ? 'text-fg' : 'text-muted'}`}>
+        <Text
+          className={`text-[15px] ${selected ? 'text-fg' : 'text-muted'}`}
+        >
           {selected?.label || placeholder || 'Select...'}
         </Text>
-        <Text className="text-fg/40 text-xs">▼</Text>
+        <Ionicons name="chevron-down" size={16} color={colors.muted} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="fade">
         <Pressable
           className="flex-1 justify-end"
-          style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
           onPress={() => setOpen(false)}
         >
           <Pressable onPress={() => {}}>
-            <View className="bg-surface rounded-t-xl overflow-hidden">
-              <View className="px-5 py-4 border-b border-fg/10">
-                <Text className="font-mono text-[13px] uppercase tracking-[2px] text-fg">
+            <View className="bg-surface rounded-t-2xl" style={shadowLg}>
+              <View className="items-center pt-3 pb-1">
+                <View className="w-9 h-1 rounded-full bg-fg/10" />
+              </View>
+              <View className="px-5 py-3">
+                <Text className="text-[15px] font-semibold text-fg">
                   {label || 'Select'}
                 </Text>
               </View>
@@ -64,21 +77,36 @@ export default function Select({ label, options, value, onChange, placeholder, e
                       onChange(option.value)
                       setOpen(false)
                     }}
-                    className={`px-5 py-4 border-b border-fg/10 ${value === option.value ? 'bg-yellow/30' : 'bg-surface'}`}
+                    style={({ pressed }) => ({
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                    className={`px-5 py-4 flex-row items-center justify-between ${
+                      value === option.value ? 'bg-accent/[0.06]' : ''
+                    }`}
                   >
-                    <Text className={`text-[16px] text-fg ${value === option.value ? 'font-bold' : ''}`}>
+                    <Text
+                      className={`text-[16px] ${value === option.value ? 'text-accent font-semibold' : 'text-fg'}`}
+                    >
                       {option.label}
                     </Text>
+                    {value === option.value && (
+                      <Ionicons
+                        name="checkmark"
+                        size={20}
+                        color={colors.accent}
+                      />
+                    )}
                   </Pressable>
                 ))}
               </ScrollView>
+              <View className="h-8" />
             </View>
           </Pressable>
         </Pressable>
       </Modal>
 
       {error && (
-        <Text className="text-[11px] text-red-600 font-semibold">{error}</Text>
+        <Text className="text-[12px] text-red-500 font-medium">{error}</Text>
       )}
     </View>
   )

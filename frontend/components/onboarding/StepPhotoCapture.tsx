@@ -3,7 +3,7 @@ import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { BreedDetectionResult } from '@/lib/types'
 import { detectBreed, isBreedDetectionAvailable } from '@/lib/breedDetection'
-import { brutShadow, brutShadowSubtle, colors } from '@/lib/theme'
+import { shadowMd, shadow, colors } from '@/lib/theme'
 import { hapticTap, hapticSuccess } from '@/lib/haptics'
 import Button from '@/components/ui/Button'
 
@@ -74,7 +74,7 @@ export default function StepPhotoCapture({
   return (
     <View className="gap-6">
       <View>
-        <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">Snap a photo</Text>
+        <Text className="text-xl font-bold text-fg mb-1">Snap a photo</Text>
         <Text className="text-muted text-sm">
           Take a photo of your pet and we'll detect their breed automatically.
         </Text>
@@ -82,8 +82,8 @@ export default function StepPhotoCapture({
 
       {/* Photo area */}
       <View
-        className="w-full aspect-square border-[2.5px] border-fg rounded-lg bg-surface items-center justify-center overflow-hidden"
-        style={brutShadow}
+        className="w-full aspect-square rounded-2xl bg-surface items-center justify-center overflow-hidden"
+        style={shadowMd}
       >
         {photoUri ? (
           <Image source={{ uri: photoUri }} className="w-full h-full" resizeMode="cover" />
@@ -109,8 +109,8 @@ export default function StepPhotoCapture({
 
       {result && (
         <View
-          className="bg-green/20 border-[1.5px] border-green rounded-lg p-4 flex-row items-center gap-3"
-          style={brutShadowSubtle}
+          className="bg-green/20 border border-fg/[0.06] rounded-2xl p-4 flex-row items-center gap-3"
+          style={shadow}
         >
           <Text className="text-2xl">✓</Text>
           <View className="flex-1">
@@ -125,7 +125,7 @@ export default function StepPhotoCapture({
       )}
 
       {error && (
-        <View className="bg-pink/20 border-[1.5px] border-pink/40 rounded-lg p-4">
+        <View className="bg-pink/20 border border-fg/[0.06] rounded-2xl p-4">
           <Text className="text-[14px] font-semibold text-fg">
             {error}
           </Text>
@@ -141,10 +141,11 @@ export default function StepPhotoCapture({
             hapticTap()
             pickImage(true)
           }}
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
           <View
-            className="border-[1.5px] border-fg/20 rounded-lg bg-surface py-4 items-center"
-            style={brutShadowSubtle}
+            className="border border-fg/[0.06] rounded-2xl bg-surface py-4 items-center"
+            style={shadow}
           >
             <Text className="text-2xl mb-1">📷</Text>
             <Text className="text-[13px] font-semibold text-fg">Camera</Text>
@@ -156,10 +157,11 @@ export default function StepPhotoCapture({
             hapticTap()
             pickImage(false)
           }}
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
         >
           <View
-            className="border-[1.5px] border-fg/20 rounded-lg bg-surface py-4 items-center"
-            style={brutShadowSubtle}
+            className="border border-fg/[0.06] rounded-2xl bg-surface py-4 items-center"
+            style={shadow}
           >
             <Text className="text-2xl mb-1">🖼️</Text>
             <Text className="text-[13px] font-semibold text-fg">Library</Text>

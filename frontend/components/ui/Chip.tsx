@@ -1,6 +1,5 @@
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { brutShadowSubtle } from '@/lib/theme'
 import { hapticTap } from '@/lib/haptics'
 
 interface ChipProps {
@@ -10,25 +9,32 @@ interface ChipProps {
   onPress?: () => void
 }
 
-export default function Chip({ label, active = false, color = '#FFE03D', onPress }: ChipProps) {
+export default function Chip({
+  label,
+  active = false,
+  color = '#FF6B35',
+  onPress,
+}: ChipProps) {
   return (
     <Pressable
       onPress={() => {
         hapticTap()
         onPress?.()
       }}
+      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
     >
       <View
-        className="px-4 py-2 border-[1.5px] rounded-lg"
-        style={[
-          {
-            backgroundColor: active ? color : '#FFFFFF',
-            borderColor: active ? color : 'rgba(26,26,26,0.3)',
-          },
-          active ? brutShadowSubtle : undefined,
-        ]}
+        className="px-4 py-2 rounded-full"
+        style={{
+          backgroundColor: active ? color + '15' : '#F4F3EF',
+          borderWidth: 1,
+          borderColor: active ? color + '30' : 'transparent',
+        }}
       >
-        <Text className={`text-[13px] font-semibold ${active ? 'text-fg' : 'text-fg/70'}`}>
+        <Text
+          className="text-[13px] font-medium"
+          style={{ color: active ? color : '#8A8570' }}
+        >
           {label}
         </Text>
       </View>

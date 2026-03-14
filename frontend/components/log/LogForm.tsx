@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router'
 import { usePets } from '@/contexts/PetContext'
 import { LogType } from '@/lib/types'
 import { generateId } from '@/lib/utils'
-import { brutShadowSubtle, colors } from '@/lib/theme'
+import { colors, shadow } from '@/lib/theme'
 import { hapticTap, hapticSuccess } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -20,14 +20,14 @@ interface LogTypeOption {
 }
 
 const logTypes: LogTypeOption[] = [
-  { value: 'weight',      label: 'Weight',      emoji: '⚖️', color: '#35A7FF' },
-  { value: 'vaccination', label: 'Vaccination',  emoji: '💉', color: '#35D483' },
-  { value: 'deworming',   label: 'Deworming',    emoji: '🐛', color: '#FFE03D' },
-  { value: 'flea_tick',   label: 'Flea & Tick',  emoji: '🦟', color: '#FF7EB3' },
-  { value: 'vet_visit',   label: 'Vet Visit',    emoji: '🏥', color: '#FF6B35' },
-  { value: 'medication',  label: 'Medication',   emoji: '💊', color: '#35A7FF' },
-  { value: 'symptom',     label: 'Symptom',      emoji: '🤒', color: '#FF7EB3' },
-  { value: 'note',        label: 'Note',         emoji: '📝', color: '#FFE03D' },
+  { value: 'weight', label: 'Weight', emoji: '\u2696\uFE0F', color: '#35A7FF' },
+  { value: 'vaccination', label: 'Vaccination', emoji: '\uD83D\uDC89', color: '#35D483' },
+  { value: 'deworming', label: 'Deworming', emoji: '\uD83D\uDC1B', color: '#FFE03D' },
+  { value: 'flea_tick', label: 'Flea & Tick', emoji: '\uD83E\uDD9F', color: '#FF7EB3' },
+  { value: 'vet_visit', label: 'Vet Visit', emoji: '\uD83C\uDFE5', color: '#FF6B35' },
+  { value: 'medication', label: 'Medication', emoji: '\uD83D\uDC8A', color: '#35A7FF' },
+  { value: 'symptom', label: 'Symptom', emoji: '\uD83E\uDD12', color: '#FF7EB3' },
+  { value: 'note', label: 'Note', emoji: '\uD83D\uDCDD', color: '#FFE03D' },
 ]
 
 function pairUp<T>(arr: T[]): T[][] {
@@ -75,7 +75,8 @@ export default function LogForm() {
         medicationName: medicationName || undefined,
         dosage: dosage || undefined,
         duration: duration || undefined,
-        severity: (severity as 'mild' | 'moderate' | 'severe') || undefined,
+        severity:
+          (severity as 'mild' | 'moderate' | 'severe') || undefined,
         vetName: vetName || undefined,
         cost: cost ? parseFloat(cost) : undefined,
       },
@@ -88,38 +89,53 @@ export default function LogForm() {
   return (
     <View className="gap-6">
       {/* Type selector */}
-      <View className="gap-2">
-        <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">Log Type</Text>
+      <View className="gap-2.5">
+        <Text className="text-[13px] font-semibold text-muted">
+          Log Type
+        </Text>
         <View className="gap-2">
           {pairUp(logTypes).map((row, i) => (
             <View key={i} className="flex-row gap-2">
-              {row.map((t) => (
-                <Pressable
-                  key={t.value}
-                  onPress={() => {
-                    hapticTap()
-                    setType(t.value)
-                    if (!title) setTitle(t.label)
-                  }}
-                  className="flex-1"
-                >
-                  <View
-                    className="flex-row items-center gap-2 px-4 py-3 border-[1.5px] rounded-lg"
-                    style={[
-                      {
-                        backgroundColor: type === t.value ? t.color : colors.surface,
-                        borderColor: type === t.value ? t.color : 'rgba(26,26,26,0.15)',
-                      },
-                      type === t.value ? brutShadowSubtle : undefined,
-                    ]}
+              {row.map((t) => {
+                const active = type === t.value
+                return (
+                  <Pressable
+                    key={t.value}
+                    onPress={() => {
+                      hapticTap()
+                      setType(t.value)
+                      if (!title) setTitle(t.label)
+                    }}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
                   >
-                    <Text className="text-lg">{t.emoji}</Text>
-                    <Text className={`text-[13px] font-semibold ${type === t.value ? 'text-fg' : 'text-fg/70'}`}>
-                      {t.label}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
+                    <View
+                      className="flex-row items-center gap-2.5 px-4 py-3.5 rounded-xl"
+                      style={[
+                        {
+                          backgroundColor: active
+                            ? t.color + '18'
+                            : colors.fieldBg,
+                          borderWidth: 1,
+                          borderColor: active
+                            ? t.color + '40'
+                            : 'transparent',
+                        },
+                        active ? shadow : undefined,
+                      ]}
+                    >
+                      <Text className="text-lg">{t.emoji}</Text>
+                      <Text
+                        className={`text-[13px] font-semibold ${active ? 'text-fg' : 'text-muted'}`}
+                      >
+                        {t.label}
+                      </Text>
+                    </View>
+                  </Pressable>
+                )
+              })}
             </View>
           ))}
         </View>
@@ -141,10 +157,11 @@ export default function LogForm() {
             maximumDate={new Date()}
           />
 
-          {/* Type-specific fields */}
           {type === 'weight' && (
-            <View className="gap-1.5">
-              <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">Weight</Text>
+            <View className="gap-2">
+              <Text className="text-[13px] font-semibold text-muted">
+                Weight
+              </Text>
               <View className="flex-row gap-2">
                 <View className="flex-1">
                   <TextInput
@@ -153,11 +170,10 @@ export default function LogForm() {
                     value={weight}
                     onChangeText={setWeight}
                     placeholderTextColor={colors.muted}
-                    className="bg-surface border-[1.5px] border-fg/40 rounded-md px-3.5 py-3 text-[15px] text-fg"
-                    style={brutShadowSubtle}
+                    className="bg-field-bg border border-fg/[0.06] rounded-lg px-4 py-3.5 text-[15px] text-fg"
                   />
                 </View>
-                <View className="flex-row bg-fg/5 rounded-lg overflow-hidden">
+                <View className="flex-row bg-field-bg rounded-lg overflow-hidden">
                   {(['kg', 'lbs'] as const).map((u) => (
                     <Pressable
                       key={u}
@@ -167,7 +183,9 @@ export default function LogForm() {
                       }}
                       className={`px-5 justify-center rounded-lg ${weightUnit === u ? 'bg-fg' : ''}`}
                     >
-                      <Text className={`text-[13px] font-semibold ${weightUnit === u ? 'text-bg' : 'text-fg/50'}`}>
+                      <Text
+                        className={`text-[13px] font-semibold ${weightUnit === u ? 'text-bg' : 'text-muted'}`}
+                      >
                         {u}
                       </Text>
                     </Pressable>
@@ -186,7 +204,9 @@ export default function LogForm() {
             />
           )}
 
-          {(type === 'medication' || type === 'deworming' || type === 'flea_tick') && (
+          {(type === 'medication' ||
+            type === 'deworming' ||
+            type === 'flea_tick') && (
             <>
               <Input
                 label="Medication / Product Name"
@@ -259,7 +279,12 @@ export default function LogForm() {
               Cancel
             </Button>
             <View className="flex-1">
-              <Button variant="accent" fullWidth onPress={handleSubmit} disabled={!canSubmit}>
+              <Button
+                variant="accent"
+                fullWidth
+                onPress={handleSubmit}
+                disabled={!canSubmit}
+              >
                 Save Log
               </Button>
             </View>

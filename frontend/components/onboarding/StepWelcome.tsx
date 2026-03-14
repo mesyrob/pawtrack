@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import { brutShadowSubtle, brutShadow } from '@/lib/theme'
+import { shadow, shadowMd } from '@/lib/theme'
 import Button from '@/components/ui/Button'
 
 const features = [
@@ -16,12 +16,12 @@ export default function StepWelcome({ onNext }: { onNext: () => void }) {
       {/* Hero */}
       <View className="items-center">
         <View
-          className="w-20 h-20 border-[2.5px] border-fg bg-yellow rounded-lg items-center justify-center mb-4"
-          style={brutShadow}
+          className="w-20 h-20 bg-yellow rounded-2xl items-center justify-center mb-4"
+          style={shadowMd}
         >
           <Text className="text-4xl">🐾</Text>
         </View>
-        <Text className="font-mono text-4xl uppercase tracking-[3px] text-fg mb-2">
+        <Text className="text-4xl font-bold text-fg mb-2">
           PawTrack
         </Text>
         <Text className="text-muted text-base text-center">
@@ -36,8 +36,8 @@ export default function StepWelcome({ onNext }: { onNext: () => void }) {
             {row.map((f) => (
               <View
                 key={f.label}
-                className="flex-1 bg-surface rounded-lg p-4 gap-1"
-                style={brutShadowSubtle}
+                className="flex-1 bg-surface rounded-2xl p-4 gap-1"
+                style={shadow}
               >
                 <Text className="text-2xl">{f.icon}</Text>
                 <Text className="text-[14px] font-bold text-fg">

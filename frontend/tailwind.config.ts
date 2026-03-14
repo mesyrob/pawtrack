@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#FFFBE6',
+        bg: '#F9F8F4',
         fg: '#1A1A1A',
         accent: '#FF6B35',
         yellow: '#FFE03D',
@@ -18,17 +18,18 @@ const config: Config = {
         green: '#35D483',
         muted: '#8A8570',
         surface: '#FFFFFF',
-        'field-bg': '#FFF8E0',
+        'field-bg': '#F4F3EF',
       },
       fontFamily: {
         mono: ['SpaceMono_700Bold'],
       },
       borderRadius: {
-        DEFAULT: '6px',
-        sm: '4px',
-        md: '8px',
-        lg: '12px',
-        xl: '16px',
+        DEFAULT: '12px',
+        sm: '8px',
+        md: '12px',
+        lg: '16px',
+        xl: '20px',
+        '2xl': '24px',
         full: '9999px',
       },
     },

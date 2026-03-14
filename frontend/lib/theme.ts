@@ -1,7 +1,7 @@
 import { ViewStyle } from 'react-native'
 
 export const colors = {
-  bg: '#FFFBE6',
+  bg: '#F9F8F4',
   fg: '#1A1A1A',
   accent: '#FF6B35',
   yellow: '#FFE03D',
@@ -10,53 +10,50 @@ export const colors = {
   green: '#35D483',
   muted: '#8A8570',
   surface: '#FFFFFF',
-  fieldBg: '#FFF8E0',
+  fieldBg: '#F4F3EF',
 } as const
 
-export const brutShadow: ViewStyle = {
-  shadowColor: colors.fg,
-  shadowOffset: { width: 3, height: 3 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
+// ─── Soft iOS-style shadows ─────────────────────────────────────────────────
+
+export const shadow: ViewStyle = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.06,
+  shadowRadius: 4,
+  elevation: 2,
+}
+
+export const shadowMd: ViewStyle = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
   elevation: 4,
 }
 
-export const brutShadowLg: ViewStyle = {
-  shadowColor: colors.fg,
-  shadowOffset: { width: 6, height: 6 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
-  elevation: 6,
+export const shadowLg: ViewStyle = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.1,
+  shadowRadius: 20,
+  elevation: 8,
 }
 
-export const brutShadowSm: ViewStyle = {
-  shadowColor: colors.fg,
-  shadowOffset: { width: 2, height: 2 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
-  elevation: 3,
+export const shadowNone: ViewStyle = {
+  shadowOpacity: 0,
+  elevation: 0,
 }
 
-export const brutShadowPressed: ViewStyle = {
-  shadowColor: colors.fg,
-  shadowOffset: { width: 1, height: 1 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
-  elevation: 1,
-}
-
+// Backwards-compatible aliases (used by existing code)
+export const brutShadow = shadowMd
+export const brutShadowLg = shadowLg
+export const brutShadowSm = shadow
+export const brutShadowPressed = shadowNone
+export const brutShadowSubtle = shadow
 export const brutShadowAccent: ViewStyle = {
   shadowColor: colors.accent,
-  shadowOffset: { width: 3, height: 3 },
-  shadowOpacity: 1,
-  shadowRadius: 0,
-  elevation: 4,
-}
-
-export const brutShadowSubtle: ViewStyle = {
-  shadowColor: colors.fg,
-  shadowOffset: { width: 1.5, height: 1.5 },
+  shadowOffset: { width: 0, height: 3 },
   shadowOpacity: 0.25,
-  shadowRadius: 0,
-  elevation: 2,
+  shadowRadius: 10,
+  elevation: 4,
 }

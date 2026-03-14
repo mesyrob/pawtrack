@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, TextInputProps } from 'react-native'
-import { brutShadowSubtle, colors } from '@/lib/theme'
+import { colors } from '@/lib/theme'
 
 interface InputProps extends Omit<TextInputProps, 'onChange'> {
   label?: string
@@ -13,15 +13,19 @@ export default function Input({ label, hint, error, onChange, style, ...props }:
   const [focused, setFocused] = useState(false)
 
   return (
-    <View className="gap-1.5">
+    <View className="gap-2">
       {label && (
-        <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">
-          {label}
-        </Text>
+        <Text className="text-[13px] font-semibold text-muted">{label}</Text>
       )}
       <TextInput
-        className={`bg-surface border-[1.5px] rounded-md px-3.5 py-3 text-[15px] text-fg ${error ? 'border-red-600' : focused ? 'border-accent' : 'border-fg/40'}`}
-        style={[brutShadowSubtle, style]}
+        className={`bg-field-bg rounded-lg px-4 py-3.5 text-[15px] text-fg border ${
+          error
+            ? 'border-red-500'
+            : focused
+              ? 'border-accent/50'
+              : 'border-fg/[0.06]'
+        }`}
+        style={style}
         placeholderTextColor={colors.muted}
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
@@ -29,10 +33,10 @@ export default function Input({ label, hint, error, onChange, style, ...props }:
         {...props}
       />
       {hint && !error && (
-        <Text className="text-[11px] text-muted">{hint}</Text>
+        <Text className="text-[12px] text-muted">{hint}</Text>
       )}
       {error && (
-        <Text className="text-[11px] text-red-600 font-semibold">{error}</Text>
+        <Text className="text-[12px] text-red-500 font-medium">{error}</Text>
       )}
     </View>
   )

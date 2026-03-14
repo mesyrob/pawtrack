@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, Pressable } from 'react-native'
 import { Species } from '@/lib/types'
-import { brutShadowSubtle, colors } from '@/lib/theme'
+import { shadow, colors } from '@/lib/theme'
 import { hapticTap } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
@@ -34,13 +34,13 @@ export default function StepPetBasics({ data, onChange, onNext, onBack }: StepPe
   return (
     <View className="gap-7">
       <View>
-        <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">Meet your pet</Text>
+        <Text className="text-xl font-bold text-fg mb-1">Meet your pet</Text>
         <Text className="text-muted text-sm">Tell us a little about them.</Text>
       </View>
 
       {/* Species chips */}
       <View className="gap-2">
-        <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">Species</Text>
+        <Text className="text-[13px] font-semibold text-muted">Species</Text>
         <View className="flex-row flex-wrap gap-2">
           {speciesOptions.map((s) => (
             <Pressable
@@ -49,15 +49,16 @@ export default function StepPetBasics({ data, onChange, onNext, onBack }: StepPe
                 hapticTap()
                 onChange({ ...data, species: s.value, breed: '' })
               }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
               <View
-                className="flex-row items-center gap-2 px-4 py-2.5 border-[1.5px] rounded-lg"
+                className="flex-row items-center gap-2 px-4 py-2.5 border border-fg/[0.06] rounded-xl"
                 style={[
                   {
                     backgroundColor: data.species === s.value ? colors.accent : colors.surface,
-                    borderColor: data.species === s.value ? colors.accent : 'rgba(26,26,26,0.3)',
+                    borderColor: data.species === s.value ? colors.accent : 'rgba(26,26,26,0.06)',
                   },
-                  data.species === s.value ? brutShadowSubtle : undefined,
+                  shadow,
                 ]}
               >
                 <Text>{s.emoji}</Text>
