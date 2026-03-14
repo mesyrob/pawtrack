@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg:        #FFFBE6;
+  --color-fg:        #1A1A1A;
+  --color-accent:    #FF6B35;
+  --color-yellow:    #FFE03D;
+  --color-blue:      #35A7FF;
+  --color-pink:      #FF7EB3;
+  --color-green:     #35D483;
+  --color-muted:     #8A8570;
+  --color-border:    #1A1A1A;
+  --color-surface:   #FFFFFF;
+  --color-field-bg:  #FFF8E0;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+  border-left: 2px solid var(--color-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-fg);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-fg);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2.5px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Brutalist base classes */
+@layer components {
+  .brut-card {
+    background: var(--color-surface);
+    border: 2.5px solid var(--color-border);
+    box-shadow: 6px 6px 0 var(--color-border);
+    border-radius: 3px;
+  }
+
+  .brut-card-sm {
+    background: var(--color-surface);
+    border: 2.5px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    border-radius: 3px;
+  }
+
+  .brut-input {
+    background: var(--color-surface);
+    border: 2.5px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    border-radius: 3px;
+    font-family: 'Instrument Sans', sans-serif;
+    color: var(--color-fg);
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 15px;
+    transition: border-color 0.1s, box-shadow 0.1s;
+  }
+
+  .brut-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 3px 3px 0 var(--color-accent);
+  }
+
+  .brut-btn {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 2.5px solid var(--color-border);
+    box-shadow: 3px 3px 0 var(--color-border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.05s, box-shadow 0.05s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .brut-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--color-border);
+  }
+
+  .label-mono {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 11px;
+  }
+}
