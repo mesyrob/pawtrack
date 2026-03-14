@@ -16,7 +16,7 @@ import { usePets } from '@/contexts/PetContext'
 import * as api from '@/lib/api'
 import { ChatMessage, LogEntry, Pet } from '@/lib/types'
 import { generateId } from '@/lib/utils'
-import { colors, brutShadow, brutShadowSm, brutShadowSubtle } from '@/lib/theme'
+import { colors, brutShadowSm, brutShadowSubtle } from '@/lib/theme'
 
 export default function ChatPage() {
   const { activePet, addLog, updatePet, isLoaded } = usePets()
@@ -92,10 +92,8 @@ export default function ChatPage() {
     const uri = asset.uri
 
     try {
-      // Get upload URL
       const { url, s3Key } = await api.getUploadUrl(asset.mimeType || 'image/jpeg')
 
-      // Upload to S3
       const blob = await fetch(uri).then((r) => r.blob())
       await fetch(url, {
         method: 'PUT',
@@ -103,7 +101,6 @@ export default function ChatPage() {
         headers: { 'Content-Type': asset.mimeType || 'image/jpeg' },
       })
 
-      // Send to chat with the s3Key
       const text = input.trim()
       sendMessage(text || undefined, uri, s3Key)
     } catch (err) {
@@ -144,51 +141,56 @@ export default function ChatPage() {
 
   if (!isLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-bg">
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
         <ActivityIndicator size="large" color={colors.fg} />
       </View>
     )
   }
 
-  if (!activePet) return null
+  if (!activePet) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
+        <Text style={{ fontSize: 16, color: colors.muted }}>No pet selected</Text>
+      </View>
+    )
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top']}>
       {/* Header */}
-      <View className="px-5 pt-3 pb-3 border-b-[2px] border-fg/10">
-        <Text className="text-muted text-[13px] font-semibold">{activePet.name}'s</Text>
-        <Text className="font-mono text-[28px] uppercase tracking-[1px] text-fg leading-tight">
+      <View style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 12, borderBottomWidth: 2, borderBottomColor: colors.fg + '1A' }}>
+        <Text style={{ color: colors.muted, fontSize: 13, fontWeight: '600' }}>{activePet.name}'s</Text>
+        <Text style={{ fontFamily: 'SpaceMono_700Bold', fontSize: 28, textTransform: 'uppercase', letterSpacing: 1, color: colors.fg }}>
           Chat
         </Text>
       </View>
 
       <KeyboardAvoidingView
-        className="flex-1"
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={90}
       >
         {/* Messages */}
         <ScrollView
           ref={scrollRef}
-          className="flex-1 px-4"
+          style={{ flex: 1, paddingHorizontal: 16 }}
           contentContainerStyle={{ paddingTop: 16, paddingBottom: 16 }}
           showsVerticalScrollIndicator={false}
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
         >
           {messages.length === 0 && (
-            <View className="items-center justify-center pt-20 px-8">
-              <Text className="text-[48px] mb-4">&#x1F4AC;</Text>
-              <Text className="font-mono text-[16px] text-fg text-center uppercase tracking-wider">
+            <View style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 80, paddingHorizontal: 32 }}>
+              <Text style={{ fontSize: 48, marginBottom: 16 }}>{'\uD83D\uDCAC'}</Text>
+              <Text style={{ fontFamily: 'SpaceMono_700Bold', fontSize: 16, color: colors.fg, textAlign: 'center', textTransform: 'uppercase', letterSpacing: 2 }}>
                 Ask PawTrack AI
               </Text>
-              <Text className="text-[14px] text-muted text-center mt-2 leading-5">
-                Tell me about {activePet.name}'s health events and I'll help you log them.
-                You can also send photos!
+              <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
+                Tell me about {activePet.name}'s health events and I'll help you log them. You can also send photos!
               </Text>
-              <View className="mt-6 gap-2">
+              <View style={{ marginTop: 24, gap: 8 }}>
                 <SuggestionChip text={`${activePet.name} weighed 4.5kg today`} onPress={sendMessage} />
-                <SuggestionChip text={`Got a rabies vaccine at the vet`} onPress={sendMessage} />
-                <SuggestionChip text={`Noticed some scratching`} onPress={sendMessage} />
+                <SuggestionChip text="Got a rabies vaccine at the vet" onPress={sendMessage} />
+                <SuggestionChip text="Noticed some scratching" onPress={sendMessage} />
               </View>
             </View>
           )}
@@ -203,30 +205,35 @@ export default function ChatPage() {
           ))}
 
           {loading && (
-            <View className="flex-row items-center gap-2 px-2 py-3">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 8, paddingVertical: 12 }}>
               <ActivityIndicator size="small" color={colors.accent} />
-              <Text className="text-[13px] text-muted">Thinking...</Text>
+              <Text style={{ fontSize: 13, color: colors.muted }}>Thinking...</Text>
             </View>
           )}
         </ScrollView>
 
         {/* Input */}
-        <View className="px-4 py-3 border-t-[2px] border-fg/10 bg-bg">
-          <View className="flex-row items-end gap-2">
+        <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 2, borderTopColor: colors.fg + '1A', backgroundColor: colors.bg }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
             <Pressable
               onPress={handlePhoto}
-              className="w-10 h-10 items-center justify-center border-[2px] border-fg rounded-md bg-surface"
-              style={brutShadowSubtle}
+              style={[{
+                width: 40, height: 40, alignItems: 'center', justifyContent: 'center',
+                borderWidth: 2, borderColor: colors.fg, borderRadius: 8, backgroundColor: colors.surface,
+              }, brutShadowSubtle]}
             >
-              <Text className="text-[18px]">&#x1F4F7;</Text>
+              <Text style={{ fontSize: 18 }}>{'\uD83D\uDCF7'}</Text>
             </Pressable>
 
             <View
-              className="flex-1 border-[2px] border-fg rounded-md bg-surface px-3 py-2 min-h-[40px] max-h-[100px]"
-              style={brutShadowSubtle}
+              style={[{
+                flex: 1, borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+                backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 8,
+                minHeight: 40, maxHeight: 100,
+              }, brutShadowSubtle]}
             >
               <TextInput
-                className="text-[15px] text-fg"
+                style={{ fontSize: 15, color: colors.fg }}
                 placeholder={`Ask about ${activePet.name}...`}
                 placeholderTextColor={colors.muted}
                 value={input}
@@ -241,14 +248,14 @@ export default function ChatPage() {
             <Pressable
               onPress={handleSend}
               disabled={loading || !input.trim()}
-              className="w-10 h-10 items-center justify-center border-[2px] border-fg rounded-md"
-              style={[
-                { backgroundColor: input.trim() ? colors.accent : colors.surface },
-                brutShadowSubtle,
-              ]}
+              style={[{
+                width: 40, height: 40, alignItems: 'center', justifyContent: 'center',
+                borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+                backgroundColor: input.trim() ? colors.accent : colors.surface,
+              }, brutShadowSubtle]}
             >
-              <Text className="text-[18px] font-bold" style={{ color: input.trim() ? '#fff' : colors.muted }}>
-                &#x2191;
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: input.trim() ? '#fff' : colors.muted }}>
+                {'\u2191'}
               </Text>
             </Pressable>
           </View>
@@ -262,10 +269,12 @@ function SuggestionChip({ text, onPress }: { text: string; onPress: (text: strin
   return (
     <Pressable
       onPress={() => onPress(text)}
-      className="border-[2px] border-fg rounded-md px-4 py-2.5 bg-surface"
-      style={brutShadowSubtle}
+      style={[{
+        borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+        paddingHorizontal: 16, paddingVertical: 10, backgroundColor: colors.surface,
+      }, brutShadowSubtle]}
     >
-      <Text className="text-[13px] text-fg">{text}</Text>
+      <Text style={{ fontSize: 13, color: colors.fg }}>{text}</Text>
     </Pressable>
   )
 }
@@ -282,29 +291,30 @@ function MessageBubble({
   const isUser = message.role === 'user'
 
   return (
-    <View className={`mb-3 ${isUser ? 'items-end' : 'items-start'}`}>
+    <View style={{ marginBottom: 12, alignItems: isUser ? 'flex-end' : 'flex-start' }}>
       <View
-        className={`max-w-[85%] border-[2px] border-fg rounded-md px-4 py-3 ${
-          isUser ? 'bg-fg' : 'bg-surface'
-        }`}
-        style={isUser ? undefined : brutShadowSm}
+        style={[{
+          maxWidth: '85%', borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+          paddingHorizontal: 16, paddingVertical: 12,
+          backgroundColor: isUser ? colors.fg : colors.surface,
+        }, isUser ? undefined : brutShadowSm]}
       >
         {message.imageUri && (
           <Image
             source={{ uri: message.imageUri }}
-            className="w-full h-[150px] rounded-sm mb-2"
+            style={{ width: '100%', height: 150, borderRadius: 4, marginBottom: 8 }}
             resizeMode="cover"
           />
         )}
 
-        <Text className={`text-[14px] leading-5 ${isUser ? 'text-bg' : 'text-fg'}`}>
+        <Text style={{ fontSize: 14, lineHeight: 20, color: isUser ? colors.bg : colors.fg }}>
           {message.content}
         </Text>
       </View>
 
       {/* Suggested logs */}
       {message.suggestedLogs && message.suggestedLogs.length > 0 && (
-        <View className="mt-2 max-w-[85%] gap-2">
+        <View style={{ marginTop: 8, maxWidth: '85%', gap: 8 }}>
           {message.suggestedLogs.map((log, i) => (
             <LogSuggestionCard key={i} log={log} onSave={onSaveLog} />
           ))}
@@ -313,7 +323,7 @@ function MessageBubble({
 
       {/* Pet updates */}
       {message.petUpdates && Object.keys(message.petUpdates).length > 0 && (
-        <View className="mt-2 max-w-[85%]">
+        <View style={{ marginTop: 8, maxWidth: '85%' }}>
           <PetUpdateCard updates={message.petUpdates} onUpdate={onUpdatePet} />
         </View>
       )}
@@ -332,31 +342,33 @@ function LogSuggestionCard({
 
   return (
     <View
-      className="border-[2px] border-fg rounded-md bg-green/10 px-4 py-3"
-      style={brutShadowSubtle}
+      style={[{
+        borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+        backgroundColor: colors.green + '1A', paddingHorizontal: 16, paddingVertical: 12,
+      }, brutShadowSubtle]}
     >
-      <View className="flex-row items-center justify-between mb-1">
-        <View className="flex-row items-center gap-2">
-          <View className="bg-green px-2 py-0.5 rounded-sm">
-            <Text className="text-[10px] font-bold uppercase tracking-wide text-fg">
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ backgroundColor: colors.green, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
+            <Text style={{ fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5, color: colors.fg }}>
               {log.type?.replace('_', ' ') || 'log'}
             </Text>
           </View>
-          <Text className="text-[11px] text-muted">{log.date}</Text>
+          <Text style={{ fontSize: 11, color: colors.muted }}>{log.date}</Text>
         </View>
       </View>
 
-      <Text className="text-[14px] font-semibold text-fg mt-1">{log.title}</Text>
+      <Text style={{ fontSize: 14, fontWeight: '600', color: colors.fg, marginTop: 4 }}>{log.title}</Text>
 
-      {log.notes && (
-        <Text className="text-[12px] text-muted mt-0.5">{log.notes}</Text>
-      )}
+      {log.notes ? (
+        <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>{log.notes}</Text>
+      ) : null}
 
-      {log.data?.weight && (
-        <Text className="font-mono text-[16px] text-fg mt-1">
+      {log.data?.weight ? (
+        <Text style={{ fontFamily: 'SpaceMono_700Bold', fontSize: 16, color: colors.fg, marginTop: 4 }}>
           {log.data.weight} {log.data.weightUnit || 'kg'}
         </Text>
-      )}
+      ) : null}
 
       <Pressable
         onPress={() => {
@@ -364,12 +376,13 @@ function LogSuggestionCard({
           onSave(log)
           setSaved(true)
         }}
-        className={`mt-2 border-[2px] border-fg rounded-md px-3 py-2 items-center ${
-          saved ? 'bg-green' : 'bg-surface'
-        }`}
-        style={saved ? undefined : brutShadowSubtle}
+        style={[{
+          marginTop: 8, borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+          paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center',
+          backgroundColor: saved ? colors.green : colors.surface,
+        }, saved ? undefined : brutShadowSubtle]}
       >
-        <Text className="text-[13px] font-bold text-fg">
+        <Text style={{ fontSize: 13, fontWeight: 'bold', color: colors.fg }}>
           {saved ? 'Saved!' : 'Save Log'}
         </Text>
       </Pressable>
@@ -386,23 +399,25 @@ function PetUpdateCard({
 }) {
   const [applied, setApplied] = useState(false)
 
-  const fields = Object.entries(updates).filter(([_, v]) => v != null && v !== '')
+  const fields = Object.entries(updates).filter(([, v]) => v != null && v !== '')
 
   if (fields.length === 0) return null
 
   return (
     <View
-      className="border-[2px] border-fg rounded-md bg-blue/10 px-4 py-3"
-      style={brutShadowSubtle}
+      style={[{
+        borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+        backgroundColor: colors.blue + '1A', paddingHorizontal: 16, paddingVertical: 12,
+      }, brutShadowSubtle]}
     >
-      <Text className="text-[12px] font-bold uppercase tracking-wide text-blue mb-2">
+      <Text style={{ fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5, color: colors.blue, marginBottom: 8 }}>
         Pet Info Update
       </Text>
 
       {fields.map(([key, value]) => (
-        <View key={key} className="flex-row items-center gap-2 mb-1">
-          <Text className="text-[13px] text-muted capitalize">{key}:</Text>
-          <Text className="text-[13px] font-semibold text-fg">{String(value)}</Text>
+        <View key={key} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <Text style={{ fontSize: 13, color: colors.muted, textTransform: 'capitalize' }}>{key}:</Text>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: colors.fg }}>{String(value)}</Text>
         </View>
       ))}
 
@@ -412,12 +427,13 @@ function PetUpdateCard({
           onUpdate(updates)
           setApplied(true)
         }}
-        className={`mt-2 border-[2px] border-fg rounded-md px-3 py-2 items-center ${
-          applied ? 'bg-blue' : 'bg-surface'
-        }`}
-        style={applied ? undefined : brutShadowSubtle}
+        style={[{
+          marginTop: 8, borderWidth: 2, borderColor: colors.fg, borderRadius: 8,
+          paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center',
+          backgroundColor: applied ? colors.blue : colors.surface,
+        }, applied ? undefined : brutShadowSubtle]}
       >
-        <Text className={`text-[13px] font-bold ${applied ? 'text-surface' : 'text-fg'}`}>
+        <Text style={{ fontSize: 13, fontWeight: 'bold', color: applied ? colors.surface : colors.fg }}>
           {applied ? 'Updated!' : 'Update Pet'}
         </Text>
       </Pressable>

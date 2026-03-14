@@ -142,14 +142,15 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
           if (remotePets.length > 0) {
             setActivePet(remotePets[0])
+
+            // Cache locally for offline use
+            for (const pet of remotePets) await storage.savePet(pet)
+            for (const log of allLogs) await storage.saveLog(log)
+
+            setIsLoaded(true)
+            return
           }
-
-          // Cache locally for offline use
-          for (const pet of remotePets) await storage.savePet(pet)
-          for (const log of allLogs) await storage.saveLog(log)
-
-          setIsLoaded(true)
-          return
+          // API returned no pets — fall through to local/defaults
         } catch (err) {
           console.warn('[PetContext] API unavailable, falling back to local storage:', err)
         }
