@@ -2,15 +2,14 @@ import React, { useState, useRef, useCallback, useMemo } from 'react'
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   Pressable,
   ActivityIndicator,
-  KeyboardAvoidingView,
+  ActionSheetIOS,
   Platform,
   Image,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { usePets } from '@/contexts/PetContext'
@@ -87,13 +86,6 @@ function getGreeting(): string {
   return 'Good night'
 }
 
-const speciesEmoji: Record<string, string> = {
-  dog: '\uD83D\uDC36',
-  cat: '\uD83D\uDC31',
-  rabbit: '\uD83D\uDC30',
-  other: '\uD83D\uDC3E',
-}
-
 // ─── Main Screen ────────────────────────────────────────────────────────────
 
 export default function ChatPage() {
@@ -110,6 +102,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const scrollRef = useRef<ScrollView>(null)
+  const searchBarRef = useRef<any>(null)
 
   const logs = useMemo(
     () => (activePet ? getLogsFor(activePet.id) : []),
@@ -172,13 +165,6 @@ export default function ChatPage() {
     },
     [activePet, scrollToBottom],
   )
-
-  const handleSend = useCallback(() => {
-    const text = input.trim()
-    if (!text) return
-    hapticTap()
-    sendMessage(text)
-  }, [input, sendMessage])
 
   const handlePhoto = useCallback(async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -248,124 +234,114 @@ export default function ChatPage() {
 
   const hasMessages = messages.length > 0
 
-  return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
-      {/* ── Header ─────────────────────────────────── */}
-      <View className="px-5 pt-3 pb-3 flex-row items-center justify-between border-b border-fg/[0.06]">
-        <View className="flex-row items-center gap-3">
-          <View
-            className="w-10 h-10 rounded-xl items-center justify-center bg-accent/10"
-            style={shadow}
-          >
-            <Text className="text-[20px]">
-              {speciesEmoji[activePet.species]}
-            </Text>
-          </View>
-          <View>
-            <Text className="text-[17px] font-bold text-fg">
-              {activePet.name}
-            </Text>
-            {alerts.length > 0 ? (
-              <Text className="text-[11px] text-accent font-medium">
-                {alerts.length} alert{alerts.length > 1 ? 's' : ''}
-              </Text>
-            ) : (
-              <Text className="text-[11px] text-green font-medium">
-                All on track
-              </Text>
-            )}
-          </View>
-        </View>
+  const handlePetSwitch = () => {
+    if (pets.length <= 1) return
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...pets.map((p) => p.name), 'Cancel'],
+          cancelButtonIndex: pets.length,
+        },
+        (index) => {
+          if (index < pets.length) {
+            hapticTap()
+            setActivePet(pets[index])
+          }
+        },
+      )
+    }
+  }
 
-        {pets.length > 1 && (
-          <View className="flex-row gap-1 bg-fg/[0.04] rounded-lg p-1">
-            {pets.map((p) => (
-              <Pressable
-                key={p.id}
-                onPress={() => {
-                  hapticTap()
-                  setActivePet(p)
-                }}
-              >
-                <View
-                  className={`px-3 py-1.5 rounded-md ${activePet.id === p.id ? 'bg-surface' : ''}`}
-                  style={
-                    activePet.id === p.id ? shadow : undefined
-                  }
-                >
-                  <Text
-                    className={`text-[11px] font-semibold ${activePet.id === p.id ? 'text-fg' : 'text-muted'}`}
-                  >
-                    {p.name}
-                  </Text>
-                </View>
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          title: activePet.name,
+          headerLargeTitle: true,
+          headerLargeTitleStyle: { color: colors.fg },
+          headerStyle: { backgroundColor: colors.bg },
+          headerSearchBarOptions: {
+            ref: searchBarRef,
+            placeholder: `Tell me about ${activePet.name}...`,
+            onChangeText: (e: any) => setInput(e.nativeEvent.text),
+            onSearchButtonPress: (e: any) => {
+              const text = e.nativeEvent?.text || input
+              if (text?.trim()) {
+                hapticTap()
+                sendMessage(text.trim())
+                searchBarRef.current?.clearText()
+                searchBarRef.current?.blur()
+              }
+            },
+            hideWhenScrolling: false,
+            tintColor: colors.accent,
+          },
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              <Pressable onPress={handlePhoto}>
+                <Ionicons name="camera" size={22} color={colors.accent} />
               </Pressable>
-            ))}
+              {pets.length > 1 && (
+                <Pressable onPress={handlePetSwitch}>
+                  <Ionicons name="swap-horizontal" size={22} color={colors.fg} />
+                </Pressable>
+              )}
+            </View>
+          ),
+        }}
+      />
+
+      <ScrollView
+        ref={scrollRef}
+        className="flex-1 bg-bg"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 100,
+        }}
+        showsVerticalScrollIndicator={false}
+        onContentSizeChange={() => {
+          if (hasMessages)
+            scrollRef.current?.scrollToEnd({ animated: false })
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {!hasMessages ? (
+          <WelcomeView
+            pet={activePet}
+            alerts={alerts}
+            onSuggestion={sendMessage}
+          />
+        ) : (
+          messages.map((msg) => (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              onSaveLog={handleSaveLog}
+              onUpdatePet={handleUpdatePet}
+            />
+          ))
+        )}
+
+        {loading && (
+          <View className="flex-row items-center gap-2.5 px-1 py-3">
+            <View
+              className="w-8 h-8 rounded-xl bg-surface items-center justify-center"
+              style={shadow}
+            >
+              <ActivityIndicator size="small" color={colors.accent} />
+            </View>
+            <Text className="text-[13px] text-muted">Thinking...</Text>
           </View>
         )}
-      </View>
 
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={90}
-      >
-        {/* ── Messages / Welcome ──────────────────── */}
-        <ScrollView
-          ref={scrollRef}
-          className="flex-1"
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            paddingBottom: 16,
-          }}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => {
-            if (hasMessages)
-              scrollRef.current?.scrollToEnd({ animated: false })
-          }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {!hasMessages ? (
-            <WelcomeView
-              pet={activePet}
-              alerts={alerts}
-              onSuggestion={sendMessage}
-            />
-          ) : (
-            messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                onSaveLog={handleSaveLog}
-                onUpdatePet={handleUpdatePet}
-              />
-            ))
-          )}
-
-          {loading && (
-            <View className="flex-row items-center gap-2.5 px-1 py-3">
-              <View
-                className="w-8 h-8 rounded-xl bg-surface items-center justify-center"
-                style={shadow}
-              >
-                <ActivityIndicator size="small" color={colors.accent} />
-              </View>
-              <Text className="text-[13px] text-muted">Thinking...</Text>
-            </View>
-          )}
-        </ScrollView>
-
-        {/* ── Quick Chips (during chat) ───────────── */}
+        {/* Quick Chips */}
         {hasMessages && !loading && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingBottom: 8,
-              gap: 6,
-            }}
+            contentContainerStyle={{ paddingTop: 8, gap: 6 }}
           >
             {['Log weight', 'Vet visit', 'Symptom', 'Add note'].map(
               (label) => (
@@ -392,67 +368,8 @@ export default function ChatPage() {
             )}
           </ScrollView>
         )}
-
-        {/* ── Input Bar ───────────────────────────── */}
-        <View className="px-4 py-3 border-t border-fg/[0.06] bg-bg">
-          <View className="flex-row items-end gap-2.5">
-            <Pressable
-              onPress={handlePhoto}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            >
-              <View
-                className="w-[44px] h-[44px] items-center justify-center rounded-xl bg-surface"
-                style={shadow}
-              >
-                <Ionicons name="camera" size={20} color={colors.muted} />
-              </View>
-            </Pressable>
-
-            <View
-              className="flex-1 bg-field-bg rounded-xl px-4 min-h-[44px] max-h-[100px] justify-center border border-fg/[0.06]"
-            >
-              <TextInput
-                className="text-[15px] text-fg py-3"
-                placeholder={`Tell me about ${activePet.name}...`}
-                placeholderTextColor={colors.muted}
-                value={input}
-                onChangeText={setInput}
-                multiline
-                onSubmitEditing={handleSend}
-                blurOnSubmit
-                editable={!loading}
-              />
-            </View>
-
-            <Pressable
-              onPress={handleSend}
-              disabled={loading || !input.trim()}
-              style={({ pressed }) => ({
-                opacity: pressed && input.trim() ? 0.7 : 1,
-              })}
-            >
-              <View
-                className="w-[44px] h-[44px] items-center justify-center rounded-xl"
-                style={[
-                  {
-                    backgroundColor: input.trim()
-                      ? colors.accent
-                      : colors.fieldBg,
-                  },
-                  input.trim() ? shadow : undefined,
-                ]}
-              >
-                <Ionicons
-                  name="arrow-up"
-                  size={20}
-                  color={input.trim() ? '#FFFFFF' : colors.muted}
-                />
-              </View>
-            </Pressable>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </ScrollView>
+    </>
   )
 }
 

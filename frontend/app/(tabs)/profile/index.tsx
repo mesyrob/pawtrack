@@ -6,7 +6,7 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { usePets } from '@/contexts/PetContext'
 import { calcAge, formatDate } from '@/lib/utils'
@@ -29,7 +29,7 @@ interface DetailRowProps {
 function DetailRow({ icon, label, value, isLast = false }: DetailRowProps) {
   return (
     <View
-      className={`flex-row items-center py-3.5 ${isLast ? '' : 'border-b border-fg/[0.04]'}`}
+      className={`flex-row items-center py-3.5 ${isLast ? '' : 'border-b-[2px] border-fg/[0.06]'}`}
     >
       <Ionicons
         name={icon}
@@ -38,7 +38,7 @@ function DetailRow({ icon, label, value, isLast = false }: DetailRowProps) {
         style={{ width: 28 }}
       />
       <Text className="text-[13px] text-muted flex-1">{label}</Text>
-      <Text className="text-[14px] font-semibold text-fg">{value}</Text>
+      <Text className="font-mono text-[13px] text-fg">{value}</Text>
     </View>
   )
 }
@@ -65,17 +65,34 @@ export default function ProfilePage() {
 
   const totalLogs = logs.length
 
+  const statPills = [
+    { label: calcAge(activePet.birthday), bg: colors.green + '15' },
+    { label: activePet.sex === 'male' ? 'Male' : 'Female', bg: colors.blue + '15' },
+    { label: activePet.size.charAt(0).toUpperCase() + activePet.size.slice(1), bg: colors.pink + '15' },
+    { label: `${totalLogs} logs`, bg: colors.yellow + '15' },
+  ]
+
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
+    <>
+      <Stack.Screen
+        options={{
+          title: activePet.name,
+          headerLargeTitle: true,
+          headerLargeTitleStyle: { color: colors.fg },
+          headerStyle: { backgroundColor: colors.bg },
+        }}
+      />
+
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="pb-32"
+        className="flex-1 bg-bg"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Hero */}
-        <View className="items-center pt-6 pb-5 px-5">
+        <View className="items-center pt-4 pb-2 px-5">
           <View
-            className="w-28 h-28 rounded-3xl items-center justify-center overflow-hidden bg-accent/10"
+            className="w-28 h-28 rounded items-center justify-center overflow-hidden bg-accent/10 border-[2.5px] border-fg"
             style={shadowMd}
           >
             {activePet.photoUrl ? (
@@ -90,41 +107,19 @@ export default function ProfilePage() {
               </Text>
             )}
           </View>
-          <Text className="text-[28px] font-bold text-fg mt-4 leading-tight">
-            {activePet.name}
-          </Text>
-          <Text className="text-[15px] text-muted mt-1">
+          <Text className="text-[15px] text-muted mt-3">
             {activePet.breed}
           </Text>
 
           {/* Quick stats pills */}
-          <View className="flex-row gap-2 mt-4">
-            {[
-              {
-                label: calcAge(activePet.birthday),
-                bg: colors.green + '15',
-              },
-              {
-                label: activePet.sex === 'male' ? 'Male' : 'Female',
-                bg: colors.blue + '15',
-              },
-              {
-                label:
-                  activePet.size.charAt(0).toUpperCase() +
-                  activePet.size.slice(1),
-                bg: colors.pink + '15',
-              },
-              {
-                label: `${totalLogs} logs`,
-                bg: colors.yellow + '15',
-              },
-            ].map((pill) => (
+          <View className="flex-row gap-2 mt-4 flex-wrap justify-center">
+            {statPills.map((pill) => (
               <View
                 key={pill.label}
-                className="px-3.5 py-1.5 rounded-full"
-                style={{ backgroundColor: pill.bg }}
+                className="px-3.5 py-2 border-[2px] border-fg"
+                style={[shadow, { backgroundColor: pill.bg }]}
               >
-                <Text className="text-[12px] font-semibold text-fg">
+                <Text className="font-mono text-[10px] uppercase tracking-[1px] text-fg">
                   {pill.label}
                 </Text>
               </View>
@@ -133,12 +128,14 @@ export default function ProfilePage() {
         </View>
 
         {/* Details Card */}
-        <View className="px-5 mt-2">
-          <Text className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-            Details
-          </Text>
+        <View className="px-5 mt-6">
+          <View className="bg-fg px-4 py-2.5">
+            <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
+              Details
+            </Text>
+          </View>
           <View
-            className="bg-surface rounded-xl px-4"
+            className="bg-surface border-[2.5px] border-fg border-t-0 px-4"
             style={shadow}
           >
             <DetailRow
@@ -189,11 +186,13 @@ export default function ProfilePage() {
 
         {/* Tracking Config */}
         <View className="px-5 mt-6">
-          <Text className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-            Tracking
-          </Text>
+          <View className="bg-fg px-4 py-2.5">
+            <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
+              Tracking
+            </Text>
+          </View>
           <View
-            className="bg-surface rounded-xl px-4 py-1"
+            className="bg-surface border-[2.5px] border-fg border-t-0 px-4 py-1"
             style={shadow}
           >
             {[
@@ -225,7 +224,7 @@ export default function ProfilePage() {
             ].map((item, index) => (
               <View
                 key={item.key}
-                className={`flex-row items-center py-3 ${index > 0 ? 'border-t border-fg/[0.04]' : ''}`}
+                className={`flex-row items-center py-3.5 ${index > 0 ? 'border-t-[2px] border-fg/[0.06]' : ''}`}
               >
                 <Ionicons
                   name={item.icon}
@@ -237,15 +236,15 @@ export default function ProfilePage() {
                   {item.label}
                 </Text>
                 <View
-                  className="w-5 h-5 rounded-full items-center justify-center"
+                  className="w-6 h-6 rounded-sm items-center justify-center border-[2px] border-fg"
                   style={{
                     backgroundColor: activePet.trackingConfig[item.key]
                       ? colors.green
-                      : colors.muted + '20',
+                      : colors.fieldBg,
                   }}
                 >
                   {activePet.trackingConfig[item.key] && (
-                    <Ionicons name="checkmark" size={13} color="#FFFFFF" />
+                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                   )}
                 </View>
               </View>
@@ -255,11 +254,11 @@ export default function ProfilePage() {
 
         {/* App Info */}
         <View className="px-5 mt-8 items-center">
-          <Text className="text-[11px] font-medium text-muted/60">
+          <Text className="font-mono text-[10px] uppercase tracking-[2px] text-muted/40">
             PawTrack v1.0
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </>
   )
 }

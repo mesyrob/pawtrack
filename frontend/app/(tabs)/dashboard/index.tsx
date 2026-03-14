@@ -5,8 +5,10 @@ import {
   ScrollView,
   Pressable,
   ActivityIndicator,
+  ActionSheetIOS,
+  Platform,
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { Stack } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { usePets } from '@/contexts/PetContext'
 import { LogEntry, Pet } from '@/lib/types'
@@ -185,6 +187,24 @@ export default function DashboardPage() {
       )[0]
   }, [logs])
 
+  const handlePetSwitch = () => {
+    if (pets.length <= 1) return
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [...pets.map((p) => p.name), 'Cancel'],
+          cancelButtonIndex: pets.length,
+        },
+        (index) => {
+          if (index < pets.length) {
+            hapticTap()
+            setActivePet(pets[index])
+          }
+        },
+      )
+    }
+  }
+
   if (!isLoaded) {
     return (
       <View className="flex-1 items-center justify-center bg-bg">
@@ -196,48 +216,26 @@ export default function DashboardPage() {
   if (!activePet) return null
 
   return (
-    <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
-      {/* ── Header ─────────────────────────────────── */}
-      <View className="px-5 pt-3 pb-3 flex-row items-center justify-between">
-        <View>
-          <Text className="text-[13px] font-medium text-muted">
-            {activePet.name}'s
-          </Text>
-          <Text className="text-[28px] font-bold text-fg leading-tight">
-            Dashboard
-          </Text>
-        </View>
-        {pets.length > 1 && (
-          <View className="flex-row gap-1 bg-fg/[0.04] rounded-lg p-1">
-            {pets.map((p) => (
-              <Pressable
-                key={p.id}
-                onPress={() => {
-                  hapticTap()
-                  setActivePet(p)
-                }}
-              >
-                <View
-                  className={`px-3 py-1.5 rounded-md ${activePet.id === p.id ? 'bg-surface' : ''}`}
-                  style={
-                    activePet.id === p.id ? shadow : undefined
-                  }
-                >
-                  <Text
-                    className={`text-[11px] font-semibold ${activePet.id === p.id ? 'text-fg' : 'text-muted'}`}
-                  >
-                    {p.name}
-                  </Text>
-                </View>
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Dashboard',
+          headerLargeTitle: true,
+          headerLargeTitleStyle: { color: colors.fg },
+          headerStyle: { backgroundColor: colors.bg },
+          headerRight: () =>
+            pets.length > 1 ? (
+              <Pressable onPress={handlePetSwitch} hitSlop={8}>
+                <Ionicons name="swap-horizontal" size={22} color={colors.fg} />
               </Pressable>
-            ))}
-          </View>
-        )}
-      </View>
+            ) : null,
+        }}
+      />
 
       <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-5 pt-2 gap-5 pb-32"
+        className="flex-1 bg-bg"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120, gap: 24 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Walking Dog */}
@@ -251,24 +249,26 @@ export default function DashboardPage() {
 
         {/* ── Pet Hero + Health Score ──────────────── */}
         <View
-          className="bg-surface rounded-2xl overflow-hidden"
+          className="bg-surface border-[2.5px] border-fg overflow-hidden"
           style={shadowMd}
         >
           <View
             className="p-5 flex-row items-center gap-4"
             style={{ backgroundColor: scoreColor + '08' }}
           >
-            <View className="w-14 h-14 rounded-xl items-center justify-center bg-accent/10">
+            <View
+              className="w-14 h-14 rounded items-center justify-center bg-accent/10 border-[2px] border-fg"
+            >
               <Text className="text-[28px]">
                 {speciesEmoji[activePet.species]}
               </Text>
             </View>
 
             <View className="flex-1">
-              <Text className="text-[18px] font-bold text-fg leading-tight">
+              <Text className="font-mono text-[16px] uppercase tracking-[1px] text-fg leading-tight">
                 {activePet.name}
               </Text>
-              <Text className="text-[13px] text-muted mt-0.5">
+              <Text className="text-[13px] text-muted mt-1">
                 {activePet.breed} {'\u00B7'} {calcAge(activePet.birthday)}
                 {latestWeight
                   ? ` \u00B7 ${latestWeight.data!.weight}${latestWeight.data!.weightUnit ?? 'kg'}`
@@ -278,22 +278,19 @@ export default function DashboardPage() {
 
             <View className="items-center">
               <Text
-                className="font-mono text-[34px] leading-none"
+                className="font-mono text-[36px] leading-none"
                 style={{ color: scoreColor }}
               >
                 {score}
               </Text>
-              <Text className="text-[10px] font-semibold uppercase tracking-wider text-muted mt-0.5">
+              <Text className="font-mono text-[9px] uppercase tracking-[1.5px] text-muted mt-1">
                 Health
               </Text>
             </View>
           </View>
 
           {/* Score bar */}
-          <View
-            className="h-1.5"
-            style={{ backgroundColor: colors.fg + '06' }}
-          >
+          <View className="h-2 bg-fg/[0.06]">
             <View
               className="h-full"
               style={{ width: `${score}%`, backgroundColor: scoreColor }}
@@ -304,9 +301,11 @@ export default function DashboardPage() {
         {/* ── Health Tracking ─────────────────────── */}
         {healthItems.length > 0 && (
           <View className="gap-3">
-            <Text className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Health Tracking
-            </Text>
+            <View className="bg-fg px-4 py-2.5">
+              <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
+                Health Tracking
+              </Text>
+            </View>
 
             {healthItems.map((item) => {
               const color = urgencyColor[item.urgency]
@@ -320,13 +319,13 @@ export default function DashboardPage() {
               return (
                 <View
                   key={item.key}
-                  className="bg-surface rounded-xl p-4"
+                  className="bg-surface border-[2.5px] border-fg p-4"
                   style={shadow}
                 >
-                  <View className="flex-row items-center justify-between mb-2.5">
+                  <View className="flex-row items-center justify-between mb-3">
                     <View className="flex-row items-center gap-3">
                       <View
-                        className="w-9 h-9 rounded-lg items-center justify-center"
+                        className="w-10 h-10 rounded items-center justify-center border-[2px] border-fg"
                         style={{ backgroundColor: color + '15' }}
                       >
                         <Ionicons
@@ -336,10 +335,10 @@ export default function DashboardPage() {
                         />
                       </View>
                       <View>
-                        <Text className="font-semibold text-[14px] text-fg">
+                        <Text className="font-mono text-[13px] uppercase tracking-[1px] text-fg">
                           {item.label}
                         </Text>
-                        <Text className="text-[11px] text-muted">
+                        <Text className="text-[11px] text-muted mt-0.5">
                           {item.lastDate
                             ? `Last: ${formatDate(item.lastDate)}`
                             : 'No record yet'}
@@ -348,11 +347,11 @@ export default function DashboardPage() {
                     </View>
 
                     <View
-                      className="px-2.5 py-1 rounded-full"
+                      className="px-2.5 py-1.5 border-[2px] border-fg"
                       style={{ backgroundColor: color + '15' }}
                     >
                       <Text
-                        className="text-[10px] font-semibold"
+                        className="font-mono text-[9px] uppercase tracking-[1.5px]"
                         style={{ color }}
                       >
                         {urgencyLabel[item.urgency]}
@@ -361,12 +360,9 @@ export default function DashboardPage() {
                   </View>
 
                   {/* Progress bar */}
-                  <View
-                    className="h-1.5 rounded-full overflow-hidden"
-                    style={{ backgroundColor: colors.fg + '06' }}
-                  >
+                  <View className="h-2 bg-fg/[0.06] overflow-hidden">
                     <View
-                      className="h-full rounded-full"
+                      className="h-full"
                       style={{
                         width: `${progress * 100}%`,
                         backgroundColor: color,
@@ -375,16 +371,16 @@ export default function DashboardPage() {
                   </View>
 
                   {item.daysUntilDue > 0 && (
-                    <Text className="text-[11px] text-muted mt-1.5">
+                    <Text className="text-[11px] text-muted mt-2">
                       {item.daysUntilDue} days until next is due
                     </Text>
                   )}
                   {item.daysUntilDue === 0 && item.lastDate && (
                     <Text
-                      className="text-[11px] font-semibold mt-1.5"
+                      className="font-mono text-[11px] uppercase mt-2"
                       style={{ color: colors.accent }}
                     >
-                      Due now
+                      Due Now
                     </Text>
                   )}
                 </View>
@@ -395,20 +391,22 @@ export default function DashboardPage() {
 
         {/* ── Recent Activity ─────────────────────── */}
         <View className="gap-3">
-          <Text className="text-xs font-semibold uppercase tracking-wider text-muted">
-            Recent Activity
-          </Text>
+          <View className="bg-fg px-4 py-2.5">
+            <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
+              Recent Activity
+            </Text>
+          </View>
 
           {recentLogs.length === 0 ? (
             <View
-              className="bg-surface rounded-xl p-6 items-center"
+              className="bg-surface border-[2.5px] border-fg p-6 items-center"
               style={shadow}
             >
               <Text className="text-[32px] mb-2">{'\uD83D\uDCCB'}</Text>
-              <Text className="text-[14px] font-semibold text-fg text-center">
+              <Text className="font-mono text-[14px] uppercase tracking-[1px] text-fg text-center">
                 No Logs Yet
               </Text>
-              <Text className="text-[13px] text-muted text-center mt-1">
+              <Text className="text-[13px] text-muted text-center mt-2">
                 Use the Chat tab to start logging {activePet.name}'s health
                 events.
               </Text>
@@ -423,20 +421,20 @@ export default function DashboardPage() {
                     style={{ width: 18 }}
                   >
                     <View
-                      className="w-3 h-3 rounded-full mt-1.5"
+                      className="w-3.5 h-3.5 rounded-sm mt-1.5 border-[2px] border-fg"
                       style={{ backgroundColor: color }}
                     />
                     {index < recentLogs.length - 1 && (
-                      <View className="flex-1 w-[1.5px] bg-fg/[0.06] mt-1" />
+                      <View className="flex-1 w-[2px] bg-fg/[0.15] mt-1" />
                     )}
                   </View>
 
-                  <View className="flex-1 pb-2.5">
+                  <View className="flex-1 pb-3">
                     <View
-                      className="bg-surface rounded-xl p-3.5"
+                      className="bg-surface border-[2.5px] border-fg p-3.5"
                       style={shadow}
                     >
-                      <View className="flex-row items-center justify-between mb-0.5">
+                      <View className="flex-row items-center justify-between mb-1">
                         <Text
                           className="font-semibold text-[14px] text-fg flex-1"
                           numberOfLines={1}
@@ -444,11 +442,11 @@ export default function DashboardPage() {
                           {item.title}
                         </Text>
                         <View
-                          className="px-2 py-0.5 rounded-full ml-2"
+                          className="px-2 py-1 ml-2 border-[1.5px] border-fg"
                           style={{ backgroundColor: color + '15' }}
                         >
                           <Text
-                            className="text-[9px] font-semibold uppercase tracking-wider"
+                            className="font-mono text-[8px] uppercase tracking-[1.5px]"
                             style={{ color }}
                           >
                             {slugToLabel(item.type)}
@@ -470,8 +468,8 @@ export default function DashboardPage() {
                       )}
 
                       {item.data?.weight && (
-                        <View className="mt-1.5 flex-row items-baseline gap-1">
-                          <Text className="font-mono text-[16px] text-fg">
+                        <View className="mt-2 flex-row items-baseline gap-1">
+                          <Text className="font-mono text-[18px] text-fg">
                             {item.data.weight}
                           </Text>
                           <Text className="text-[11px] text-muted">
@@ -492,9 +490,7 @@ export default function DashboardPage() {
             })
           )}
         </View>
-
-        <View className="h-4" />
       </ScrollView>
-    </SafeAreaView>
+    </>
   )
 }
