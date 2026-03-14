@@ -40,6 +40,16 @@ export interface BreedDetectionResult {
   confidence: number
 }
 
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  imageUri?: string
+  suggestedLogs?: Partial<LogEntry>[]
+  petUpdates?: Partial<Pet>
+  timestamp: string
+}
+
 export interface LogEntry {
   id: string
   petId: string

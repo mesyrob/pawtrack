@@ -20,6 +20,10 @@ export default function TabLayout() {
         <Icon sf={{ default: 'heart', selected: 'heart.fill' }} />
         <Label>Health</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="chat">
+        <Icon sf={{ default: 'bubble.left', selected: 'bubble.left.fill' }} />
+        <Label>Chat</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: 'pawprint', selected: 'pawprint.fill' }} />
         <Label>Profile</Label>

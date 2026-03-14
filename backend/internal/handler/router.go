@@ -14,10 +14,11 @@ type Router struct {
 	pets  *PetHandler
 	logs  *LogHandler
 	breed *BreedHandler
+	chat  *ChatHandler
 }
 
-func NewRouter(pets *PetHandler, logs *LogHandler, breed *BreedHandler) *Router {
-	return &Router{pets: pets, logs: logs, breed: breed}
+func NewRouter(pets *PetHandler, logs *LogHandler, breed *BreedHandler, chat *ChatHandler) *Router {
+	return &Router{pets: pets, logs: logs, breed: breed, chat: chat}
 }
 
 func (r *Router) Handle(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
@@ -42,6 +43,9 @@ func (r *Router) Handle(ctx context.Context, req events.APIGatewayV2HTTPRequest)
 
 	case method == http.MethodPost && path == "/detect-breed":
 		return r.breed.Detect(ctx, req)
+
+	case method == http.MethodPost && path == "/chat":
+		return r.chat.Chat(ctx, req)
 
 	case path == "/pets" && method == http.MethodPost:
 		return r.pets.Create(ctx, req)

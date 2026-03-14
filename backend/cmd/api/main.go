@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/rekognition"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/pawtrack/backend/internal/breed"
+	claude "github.com/pawtrack/backend/internal/claude"
 	"github.com/pawtrack/backend/internal/handler"
 	"github.com/pawtrack/backend/internal/store"
 )
@@ -31,14 +32,18 @@ func main() {
 	s3Client := s3.NewFromConfig(cfg)
 	rekClient := rekognition.NewFromConfig(cfg)
 
+	anthropicKey := os.Getenv("ANTHROPIC_API_KEY")
+
 	st := store.New(ddbClient, petsTable, logsTable)
 	detector := breed.NewDetector(rekClient, photosBucket)
+	claudeClient := claude.New(anthropicKey)
 
 	petHandler := handler.NewPetHandler(st)
 	logHandler := handler.NewLogHandler(st)
 	breedHandler := handler.NewBreedHandler(detector, s3Client, photosBucket)
+	chatHandler := handler.NewChatHandler(claudeClient, st, s3Client, photosBucket)
 
-	router := handler.NewRouter(petHandler, logHandler, breedHandler)
+	router := handler.NewRouter(petHandler, logHandler, breedHandler, chatHandler)
 
 	lambda.Start(router.Handle)
 }

@@ -97,6 +97,25 @@ export async function detectBreedRemote(s3Key: string) {
   )
 }
 
+// ── Chat (Claude AI) ────────────────────────────────────────────────────────
+
+export interface ChatResponse {
+  reply: string
+  suggestedLogs?: Partial<import('./types').LogEntry>[]
+  petUpdates?: Partial<import('./types').Pet>
+}
+
+export async function chat(
+  petId: string,
+  message?: string,
+  s3Key?: string,
+): Promise<ChatResponse> {
+  return request<ChatResponse>('/chat', {
+    method: 'POST',
+    body: JSON.stringify({ petId, message, s3Key }),
+  })
+}
+
 // ── Health ───────────────────────────────────────────────────────────────────
 
 export async function healthCheck(): Promise<{ status: string }> {
