@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { Pet, LogEntry } from '@/lib/types'
 import * as storage from '@/lib/storage'
+import * as api from '@/lib/api'
 
 const DEFAULT_PET: Pet = {
   id: 'yamato-default',
@@ -99,6 +100,8 @@ const DEFAULT_LOGS: LogEntry[] = [
   },
 ]
 
+const useRemote = api.isApiConfigured()
+
 interface PetContextValue {
   pets: Pet[]
   logs: LogEntry[]
@@ -124,6 +127,35 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function load() {
+      if (useRemote) {
+        try {
+          const remotePets = await api.listPets()
+          setPets(remotePets)
+
+          // Load logs for all pets
+          const allLogs: LogEntry[] = []
+          for (const pet of remotePets) {
+            const petLogs = await api.listLogs(pet.id)
+            allLogs.push(...petLogs)
+          }
+          setLogs(allLogs)
+
+          if (remotePets.length > 0) {
+            setActivePet(remotePets[0])
+          }
+
+          // Cache locally for offline use
+          for (const pet of remotePets) await storage.savePet(pet)
+          for (const log of allLogs) await storage.saveLog(log)
+
+          setIsLoaded(true)
+          return
+        } catch (err) {
+          console.warn('[PetContext] API unavailable, falling back to local storage:', err)
+        }
+      }
+
+      // Local-only or API fallback
       const storedPets = await storage.getPets()
       const storedLogs = await storage.getLogs()
 
@@ -132,7 +164,7 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
         setLogs(storedLogs)
         setActivePet(storedPets[0])
       } else {
-        // Seed Yamato as the default pet
+        // Seed default data
         await storage.savePet(DEFAULT_PET)
         for (const log of DEFAULT_LOGS) {
           await storage.saveLog(log)
@@ -148,18 +180,42 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const addPet = useCallback((pet: Pet) => {
-    storage.savePet(pet)
-    setPets((prev) => [...prev, pet])
-    setActivePet(pet)
+    if (useRemote) {
+      api.createPet(pet).then((created) => {
+        storage.savePet(created)
+        setPets((prev) => [...prev, created])
+        setActivePet(created)
+      }).catch((err) => {
+        console.error('[PetContext] Failed to create pet remotely:', err)
+        // Fall back to local
+        storage.savePet(pet)
+        setPets((prev) => [...prev, pet])
+        setActivePet(pet)
+      })
+    } else {
+      storage.savePet(pet)
+      setPets((prev) => [...prev, pet])
+      setActivePet(pet)
+    }
   }, [])
 
   const updatePet = useCallback((pet: Pet) => {
+    if (useRemote) {
+      api.updatePet(pet).catch((err) =>
+        console.error('[PetContext] Failed to update pet remotely:', err)
+      )
+    }
     storage.savePet(pet)
     setPets((prev) => prev.map((p) => (p.id === pet.id ? pet : p)))
     setActivePet((prev) => (prev?.id === pet.id ? pet : prev))
   }, [])
 
   const removePet = useCallback((petId: string) => {
+    if (useRemote) {
+      api.deletePet(petId).catch((err) =>
+        console.error('[PetContext] Failed to delete pet remotely:', err)
+      )
+    }
     storage.deletePet(petId)
     setPets((prev) => prev.filter((p) => p.id !== petId))
     setLogs((prev) => prev.filter((l) => l.petId !== petId))
@@ -167,8 +223,19 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const addLog = useCallback((log: LogEntry) => {
-    storage.saveLog(log)
-    setLogs((prev) => [...prev, log])
+    if (useRemote) {
+      api.createLog(log.petId, log).then((created) => {
+        storage.saveLog(created)
+        setLogs((prev) => [...prev, created])
+      }).catch((err) => {
+        console.error('[PetContext] Failed to create log remotely:', err)
+        storage.saveLog(log)
+        setLogs((prev) => [...prev, log])
+      })
+    } else {
+      storage.saveLog(log)
+      setLogs((prev) => [...prev, log])
+    }
   }, [])
 
   const updateLog = useCallback((log: LogEntry) => {

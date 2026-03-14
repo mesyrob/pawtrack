@@ -13,3 +13,10 @@ variable "image_tag" {
   description = "Container image tag for Lambda (typically git SHA)"
   default     = "latest"
 }
+
+variable "anthropic_api_key" {
+  type        = string
+  description = "Anthropic API key for Claude-powered features (breed detection, log parsing, health insights)"
+  sensitive   = true
+  default     = ""
+}

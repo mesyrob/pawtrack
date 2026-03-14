@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { BreedDetectionResult } from '@/lib/types'
-import { detectBreed, isApiKeyConfigured } from '@/lib/breedDetection'
+import { detectBreed, isBreedDetectionAvailable } from '@/lib/breedDetection'
 import { brutShadow, brutShadowSubtle, colors } from '@/lib/theme'
 import { hapticTap, hapticSuccess } from '@/lib/haptics'
 import Button from '@/components/ui/Button'
@@ -49,8 +49,8 @@ export default function StepPhotoCapture({
     setAnalyzing(true)
 
     try {
-      if (!isApiKeyConfigured) {
-        setError('API key not configured — fill in details manually')
+      if (!isBreedDetectionAvailable) {
+        setError('Backend API not configured — fill in details manually')
         setAnalyzing(false)
         return
       }

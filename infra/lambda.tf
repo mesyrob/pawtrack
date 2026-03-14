@@ -8,9 +8,10 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      PETS_TABLE    = aws_dynamodb_table.pets.name
-      LOGS_TABLE    = aws_dynamodb_table.logs.name
-      PHOTOS_BUCKET = aws_s3_bucket.photos.id
+      PETS_TABLE        = aws_dynamodb_table.pets.name
+      LOGS_TABLE        = aws_dynamodb_table.logs.name
+      PHOTOS_BUCKET     = aws_s3_bucket.photos.id
+      ANTHROPIC_API_KEY = var.anthropic_api_key
     }
   }
 

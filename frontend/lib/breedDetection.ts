@@ -1,23 +1,5 @@
 import { BreedDetectionResult } from './types'
-
-const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY ?? ''
-
-const PLACEHOLDER_PATTERNS = [
-  'your-api-key',
-  'sk-ant-xxx',
-  'your_api_key',
-  'replace-me',
-  'placeholder',
-  'test-key',
-]
-
-function isValidApiKey(key: string): boolean {
-  if (!key || key.length < 10) return false
-  const lower = key.toLowerCase()
-  return !PLACEHOLDER_PATTERNS.some((p) => lower.includes(p))
-}
-
-export const isApiKeyConfigured = isValidApiKey(API_KEY)
+import * as api from './api'
 
 const FALLBACK: BreedDetectionResult = {
   species: 'dog',
@@ -27,59 +9,56 @@ const FALLBACK: BreedDetectionResult = {
   confidence: 0,
 }
 
+export const isBreedDetectionAvailable = api.isApiConfigured()
+
+/**
+ * Upload a photo to S3 via presigned URL, then call the backend
+ * to detect breed via Rekognition. Keeps the API key server-side.
+ */
 export async function detectBreed(
   base64Data: string,
   mimeType: string = 'image/jpeg',
 ): Promise<BreedDetectionResult> {
   try {
-    if (!isApiKeyConfigured) {
-      console.warn('[breedDetection] API key not configured or is a placeholder')
+    if (!isBreedDetectionAvailable) {
+      console.warn('[breedDetection] API URL not configured')
       return FALLBACK
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 256,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: mimeType, data: base64Data },
-              },
-              {
-                type: 'text',
-                text: 'Analyze this pet photo. Respond with ONLY a JSON object (no markdown, no explanation):\n{"species":"dog"|"cat"|"rabbit"|"other","breed":"<specific breed>","color":"<primary coat color>","size":"small"|"medium"|"large","confidence":0.0-1.0}\nIf no animal is visible, set confidence to 0.',
-              },
-            ],
-          },
-        ],
-      }),
+    // 1. Get a presigned upload URL from the backend
+    const { url, s3Key } = await api.getUploadUrl(mimeType)
+
+    // 2. Decode base64 and upload the image to S3
+    const binaryString = atob(base64Data)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+
+    const uploadRes = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': mimeType },
+      body: bytes,
     })
 
-    if (!response.ok) {
-      console.error(`[breedDetection] API error: ${response.status} ${response.statusText}`)
+    if (!uploadRes.ok) {
+      console.error(`[breedDetection] S3 upload failed: ${uploadRes.status}`)
       return FALLBACK
     }
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-    const json = JSON.parse(text)
+    // 3. Ask the backend to detect breed from the uploaded image
+    const result = await api.detectBreedRemote(s3Key)
 
     return {
-      species: ['dog', 'cat', 'rabbit', 'other'].includes(json.species) ? json.species : 'dog',
-      breed: json.breed || 'Mixed',
-      color: json.color || 'Brown',
-      size: ['small', 'medium', 'large'].includes(json.size) ? json.size : 'medium',
-      confidence: typeof json.confidence === 'number' ? json.confidence : 0,
+      species: ['dog', 'cat', 'rabbit', 'other'].includes(result.species)
+        ? (result.species as BreedDetectionResult['species'])
+        : 'dog',
+      breed: result.breed || 'Mixed',
+      color: result.color || 'Brown',
+      size: ['small', 'medium', 'large'].includes(result.size)
+        ? (result.size as BreedDetectionResult['size'])
+        : 'medium',
+      confidence: typeof result.confidence === 'number' ? result.confidence : 0,
     }
   } catch (err) {
     console.error('[breedDetection] Detection failed:', err)
