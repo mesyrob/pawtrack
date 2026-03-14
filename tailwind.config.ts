@@ -2,33 +2,26 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
   ],
+  presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
-        bg: 'var(--color-bg)',
-        fg: 'var(--color-fg)',
-        accent: 'var(--color-accent)',
-        yellow: 'var(--color-yellow)',
-        blue: 'var(--color-blue)',
-        pink: 'var(--color-pink)',
-        green: 'var(--color-green)',
-        muted: 'var(--color-muted)',
-        border: 'var(--color-border)',
-        surface: 'var(--color-surface)',
-        'field-bg': 'var(--color-field-bg)',
+        bg: '#FFFBE6',
+        fg: '#1A1A1A',
+        accent: '#FF6B35',
+        yellow: '#FFE03D',
+        blue: '#35A7FF',
+        pink: '#FF7EB3',
+        green: '#35D483',
+        muted: '#8A8570',
+        surface: '#FFFFFF',
+        'field-bg': '#FFF8E0',
       },
       fontFamily: {
-        mono: ['"Space Mono"', 'monospace'],
-        sans: ['"Instrument Sans"', 'sans-serif'],
-      },
-      boxShadow: {
-        brut: '3px 3px 0 var(--color-border)',
-        'brut-lg': '6px 6px 0 var(--color-border)',
-        'brut-accent': '3px 3px 0 var(--color-accent)',
+        mono: ['SpaceMono_700Bold'],
       },
       borderRadius: {
         DEFAULT: '3px',

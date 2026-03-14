@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "PawTrack",
+    "slug": "pawtrack",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "pawtrack",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pawtrack.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFBE6"
+      },
+      "package": "com.pawtrack.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
