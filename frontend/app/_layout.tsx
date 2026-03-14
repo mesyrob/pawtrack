@@ -25,7 +25,19 @@ export default function RootLayout() {
   return (
     <PetProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="log"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+          }}
+        />
+        <Stack.Screen name="onboarding" />
+      </Stack>
     </PetProvider>
   )
 }

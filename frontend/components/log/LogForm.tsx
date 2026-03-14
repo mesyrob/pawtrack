@@ -82,7 +82,7 @@ export default function LogForm() {
       createdAt: new Date().toISOString(),
     })
 
-    router.push('/dashboard')
+    router.back()
   }
 
   return (
@@ -255,7 +255,7 @@ export default function LogForm() {
           />
 
           <View className="flex-row gap-3 pt-2">
-            <Button variant="ghost" onPress={() => router.push('/dashboard')}>
+            <Button variant="ghost" onPress={() => router.back()}>
               Cancel
             </Button>
             <View className="flex-1">

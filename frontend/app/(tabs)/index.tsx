@@ -1,18 +1,24 @@
-import React, { useEffect } from 'react'
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native'
-import { useRouter } from 'expo-router'
+import React from 'react'
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { usePets } from '@/contexts/PetContext'
 import { daysSince } from '@/lib/utils'
 import { LogEntry } from '@/lib/types'
 import { colors } from '@/lib/theme'
-import { hapticTap } from '@/lib/haptics'
 import StatBox from '@/components/ui/StatBox'
 import PetCard from '@/components/dashboard/PetCard'
 import WalkingDog from '@/components/dashboard/WalkingDog'
 import TodoList from '@/components/dashboard/TodoList'
 import RecentLogs from '@/components/dashboard/RecentLogs'
-import Button from '@/components/ui/Button'
+import FloatingLogButton from '@/components/ui/FloatingLogButton'
+
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  if (h < 21) return 'Good evening'
+  return 'Good night'
+}
 
 function getLastVaccineDate(logs: LogEntry[]): string | null {
   const vaccines = logs
@@ -32,7 +38,7 @@ function getWeightChange(logs: LogEntry[]): string {
   const weights = logs
     .filter((l) => l.type === 'weight' && l.data?.weight)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-  if (weights.length < 2) return '—'
+  if (weights.length < 2) return '--'
   const first = weights[0].data!.weight!
   const last = weights[weights.length - 1].data!.weight!
   const diff = last - first
@@ -40,15 +46,14 @@ function getWeightChange(logs: LogEntry[]): string {
   return `${sign}${diff.toFixed(1)}kg`
 }
 
-export default function DashboardPage() {
-  const router = useRouter()
+export default function HomePage() {
   const { activePet, pets, isLoaded, getLogsFor, setActivePet } = usePets()
+  const [refreshing, setRefreshing] = React.useState(false)
 
-  useEffect(() => {
-    if (isLoaded && pets.length === 0) {
-      router.replace('/onboarding')
-    }
-  }, [isLoaded, pets, router])
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true)
+    setTimeout(() => setRefreshing(false), 600)
+  }, [])
 
   if (!isLoaded) {
     return (
@@ -68,43 +73,44 @@ export default function DashboardPage() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       {/* Header */}
-      <View className="bg-surface border-b border-fg/10 px-5 py-3 flex-row items-center justify-between">
-        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">PawTrack</Text>
-        {pets.length > 1 && (
-          <View className="flex-row gap-1.5 bg-fg/5 rounded-lg p-1">
-            {pets.map((p) => (
-              <Pressable
-                key={p.id}
-                onPress={() => {
-                  hapticTap()
-                  setActivePet(p)
-                }}
-                className={`px-3 py-1.5 rounded-lg ${activePet.id === p.id ? 'bg-fg' : ''}`}
-              >
-                <Text
-                  className={`text-[12px] font-semibold ${activePet.id === p.id ? 'text-bg' : 'text-fg/60'}`}
+      <View className="px-5 pt-3 pb-2">
+        <Text className="text-muted text-[13px] font-semibold">{getGreeting()}</Text>
+        <View className="flex-row items-baseline justify-between">
+          <Text className="font-mono text-[28px] uppercase tracking-[1px] text-fg leading-tight">
+            {activePet.name}
+          </Text>
+          {pets.length > 1 && (
+            <View className="flex-row gap-1 bg-fg/5 rounded-lg p-1">
+              {pets.map((p) => (
+                <View
+                  key={p.id}
+                  className={`px-3 py-1 rounded-md ${activePet.id === p.id ? 'bg-fg' : ''}`}
+                  onTouchEnd={() => setActivePet(p)}
                 >
-                  {p.name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-        <Pressable
-          onPress={() => {
-            hapticTap()
-            router.push('/onboarding')
-          }}
-        >
-          <Text className="text-[13px] font-semibold text-accent">+ Pet</Text>
-        </Pressable>
+                  <Text
+                    className={`text-[11px] font-bold ${activePet.id === p.id ? 'text-bg' : 'text-fg/50'}`}
+                  >
+                    {p.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
 
-      {/* Main content */}
+      {/* Content */}
       <ScrollView
         className="flex-1"
-        contentContainerClassName="px-5 pt-4 gap-5 pb-36"
+        contentContainerClassName="px-5 pt-2 gap-4 pb-28"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.fg}
+          />
+        }
       >
         {activePet.species === 'dog' && (
           <WalkingDog
@@ -113,24 +119,25 @@ export default function DashboardPage() {
             color={activePet.color}
           />
         )}
+
         <PetCard pet={activePet} />
 
-        {/* Stats row */}
+        {/* Stats */}
         <View className="flex-row gap-3">
           <StatBox
             label="Last Vaccine"
-            value={lastVaccine ? `${daysSince(lastVaccine)}d` : '—'}
+            value={lastVaccine ? `${daysSince(lastVaccine)}d` : '--'}
             sub={lastVaccine ? 'days ago' : 'no record'}
             color={colors.green}
           />
           <StatBox
             label="Since Vet"
-            value={lastVet ? `${daysSince(lastVet)}d` : '—'}
+            value={lastVet ? `${daysSince(lastVet)}d` : '--'}
             sub={lastVet ? 'days ago' : 'no record'}
             color={colors.blue}
           />
           <StatBox
-            label="Weight Δ"
+            label="Weight"
             value={weightChange}
             sub="all time"
             color={colors.pink}
@@ -139,14 +146,12 @@ export default function DashboardPage() {
 
         <TodoList pet={activePet} logs={logs} />
         <RecentLogs logs={logs} />
+
+        {/* Spacer for tab bar */}
+        <View className="h-4" />
       </ScrollView>
 
-      {/* FAB */}
-      <View className="absolute bottom-6 left-5 right-5 items-center">
-        <Button variant="accent" size="lg" fullWidth onPress={() => router.push('/log')}>
-          + Log Something
-        </Button>
-      </View>
+      <FloatingLogButton />
     </SafeAreaView>
   )
 }
