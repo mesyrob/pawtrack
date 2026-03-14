@@ -1,6 +1,7 @@
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { brutShadow, brutShadowPressed } from '@/lib/theme'
+import { brutShadowSm, brutShadowPressed } from '@/lib/theme'
+import { hapticTap } from '@/lib/haptics'
 
 type Variant = 'primary' | 'accent' | 'ghost'
 type Size = 'sm' | 'md' | 'lg'
@@ -27,15 +28,15 @@ const variantText: Record<Variant, string> = {
 }
 
 const sizeStyles: Record<Size, string> = {
-  sm: 'px-3 py-1.5',
-  md: 'px-5 py-2.5',
-  lg: 'px-7 py-3.5',
+  sm: 'px-4 py-2',
+  md: 'px-6 py-3',
+  lg: 'px-8 py-4',
 }
 
 const sizeText: Record<Size, string> = {
-  sm: 'text-[10px]',
-  md: 'text-[11px]',
-  lg: 'text-[12px]',
+  sm: 'text-[13px]',
+  md: 'text-[15px]',
+  lg: 'text-[17px]',
 }
 
 export default function Button({
@@ -46,15 +47,24 @@ export default function Button({
   onPress,
   children,
 }: ButtonProps) {
+  const isGhost = variant === 'ghost'
+  const borderClass = isGhost ? 'border-[1.5px] border-fg/30' : 'border-[2px] border-fg'
+
   return (
-    <Pressable onPress={onPress} disabled={disabled}>
+    <Pressable
+      onPress={() => {
+        hapticTap()
+        onPress?.()
+      }}
+      disabled={disabled}
+    >
       {({ pressed }) => (
         <View
-          className={`flex-row items-center justify-center gap-2 border-[2.5px] border-fg rounded-[3px] ${variantBg[variant]} ${sizeStyles[size]} ${fullWidth ? 'w-full' : ''} ${disabled ? 'opacity-40' : ''}`}
-          style={pressed && !disabled ? brutShadowPressed : brutShadow}
+          className={`flex-row items-center justify-center gap-2 rounded-md ${borderClass} ${variantBg[variant]} ${sizeStyles[size]} ${fullWidth ? 'w-full' : ''} ${disabled ? 'opacity-40' : ''}`}
+          style={!isGhost ? (pressed && !disabled ? brutShadowPressed : brutShadowSm) : undefined}
         >
           <Text
-            className={`font-mono uppercase tracking-[2px] ${variantText[variant]} ${sizeText[size]}`}
+            className={`font-semibold ${variantText[variant]} ${sizeText[size]}`}
           >
             {typeof children === 'string' ? children : ''}
           </Text>

@@ -1,5 +1,11 @@
-import React from 'react'
-import { View, Text } from 'react-native'
+import React, { useEffect } from 'react'
+import { View } from 'react-native'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated'
 
 interface ProgressBarProps {
   total: number
@@ -7,23 +13,25 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({ total, current }: ProgressBarProps) {
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    progress.value = withTiming(current / total, {
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+    })
+  }, [current, total, progress])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%` as `${number}%`,
+  }))
+
   return (
-    <View className="flex-row items-center gap-2">
-      {Array.from({ length: total }).map((_, i) => (
-        <View
-          key={i}
-          className={`h-2.5 border-2 border-fg rounded-[2px] ${
-            i < current
-              ? 'bg-accent w-6'
-              : i === current
-              ? 'bg-yellow w-6'
-              : 'bg-surface w-4'
-          }`}
-        />
-      ))}
-      <Text className="font-mono uppercase text-[10px] text-muted ml-1">
-        {current}/{total}
-      </Text>
+    <View className="flex-1 h-[6px] bg-fg/10 rounded-full overflow-hidden ml-3">
+      <Animated.View
+        className="h-full bg-accent rounded-full"
+        style={animatedStyle}
+      />
     </View>
   )
 }

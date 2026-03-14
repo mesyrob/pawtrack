@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { View, Text, Pressable, Platform } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { formatDate } from '@/lib/utils'
-import { brutShadow, colors } from '@/lib/theme'
+import { brutShadowSubtle } from '@/lib/theme'
+import { hapticSelect } from '@/lib/haptics'
 
 interface DateInputProps {
   label?: string
@@ -23,9 +24,12 @@ export default function DateInput({ label, value, onChange, maximumDate }: DateI
         </Text>
       )}
       <Pressable
-        onPress={() => setShow(true)}
-        style={brutShadow}
-        className="bg-surface border-[2.5px] border-fg rounded-[3px] px-3.5 py-2.5"
+        onPress={() => {
+          hapticSelect()
+          setShow(true)
+        }}
+        style={brutShadowSubtle}
+        className="bg-surface border-[1.5px] border-fg/40 rounded-md px-3.5 py-3"
       >
         <Text className={`text-[15px] ${value ? 'text-fg' : 'text-muted'}`}>
           {value ? formatDate(value) : 'Select date...'}

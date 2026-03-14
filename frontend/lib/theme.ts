@@ -52,3 +52,11 @@ export const brutShadowAccent: ViewStyle = {
   shadowRadius: 0,
   elevation: 4,
 }
+
+export const brutShadowSubtle: ViewStyle = {
+  shadowColor: colors.fg,
+  shadowOffset: { width: 1.5, height: 1.5 },
+  shadowOpacity: 0.25,
+  shadowRadius: 0,
+  elevation: 2,
+}

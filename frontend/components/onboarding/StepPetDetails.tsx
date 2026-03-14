@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, Pressable, TextInput } from 'react-native'
 import { Sex, PetSize } from '@/lib/types'
-import { brutShadow, brutShadowSm, colors } from '@/lib/theme'
+import { brutShadowSubtle, colors } from '@/lib/theme'
+import { hapticTap } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import DateInput from '@/components/ui/DateInput'
@@ -83,18 +84,21 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
               value={data.weight}
               onChangeText={(text) => onChange({ ...data, weight: text })}
               placeholderTextColor={colors.muted}
-              className="bg-surface border-[2.5px] border-fg rounded-[3px] px-3.5 py-2.5 text-[15px] text-fg"
-              style={brutShadow}
+              className="bg-surface border-[1.5px] border-fg/40 rounded-md px-3.5 py-3 text-[15px] text-fg"
+              style={brutShadowSubtle}
             />
           </View>
-          <View className="flex-row border-2 border-fg rounded-[3px] overflow-hidden" style={brutShadowSm}>
+          <View className="flex-row bg-fg/5 rounded-lg overflow-hidden">
             {(['kg', 'lbs'] as const).map((u) => (
               <Pressable
                 key={u}
-                onPress={() => onChange({ ...data, weightUnit: u })}
-                className={`px-4 justify-center ${data.weightUnit === u ? 'bg-fg' : 'bg-surface'}`}
+                onPress={() => {
+                  hapticTap()
+                  onChange({ ...data, weightUnit: u })
+                }}
+                className={`px-5 justify-center rounded-lg ${data.weightUnit === u ? 'bg-fg' : ''}`}
               >
-                <Text className={`font-mono uppercase text-[11px] tracking-wider ${data.weightUnit === u ? 'text-bg' : 'text-fg'}`}>
+                <Text className={`text-[13px] font-semibold ${data.weightUnit === u ? 'text-bg' : 'text-fg/50'}`}>
                   {u}
                 </Text>
               </Pressable>
@@ -114,7 +118,7 @@ export default function StepPetDetails({ data, onChange, onNext, onBack }: StepP
         <Button variant="ghost" onPress={onBack}>← Back</Button>
         <View className="flex-1">
           <Button variant="accent" fullWidth onPress={onNext} disabled={!isValid}>
-            Continue →
+            Continue
           </Button>
         </View>
       </View>

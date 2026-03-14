@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, TextInputProps } from 'react-native'
-import { brutShadow, brutShadowAccent, colors } from '@/lib/theme'
+import { brutShadowSubtle, colors } from '@/lib/theme'
 
 interface TextAreaProps extends Omit<TextInputProps, 'onChange'> {
   label?: string
@@ -23,8 +23,8 @@ export default function TextArea({ label, hint, error, onChange, style, ...props
         multiline
         numberOfLines={4}
         textAlignVertical="top"
-        className={`bg-surface border-[2.5px] rounded-[3px] px-3.5 py-2.5 text-[15px] text-fg min-h-[100px] ${error ? 'border-red-600' : focused ? 'border-accent' : 'border-fg'}`}
-        style={[focused ? brutShadowAccent : brutShadow, style]}
+        className={`bg-surface border-[1.5px] rounded-md px-3.5 py-3 text-[15px] text-fg min-h-[100px] ${error ? 'border-red-600' : focused ? 'border-accent' : 'border-fg/40'}`}
+        style={[brutShadowSubtle, style]}
         placeholderTextColor={colors.muted}
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
@@ -35,7 +35,7 @@ export default function TextArea({ label, hint, error, onChange, style, ...props
         <Text className="text-[11px] text-muted">{hint}</Text>
       )}
       {error && (
-        <Text className="text-[11px] text-red-600 font-mono uppercase tracking-wider">{error}</Text>
+        <Text className="text-[11px] text-red-600 font-semibold">{error}</Text>
       )}
     </View>
   )

@@ -3,7 +3,6 @@ import { View, Text, ScrollView, Pressable, KeyboardAvoidingView, Platform } fro
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { usePets } from '@/contexts/PetContext'
-import { brutShadowSm } from '@/lib/theme'
 import LogForm from '@/components/log/LogForm'
 
 export default function LogPage() {
@@ -21,19 +20,18 @@ export default function LogPage() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       {/* Header */}
-      <View className="bg-surface border-b-2 border-fg px-4 py-3 flex-row items-center gap-3">
+      <View className="bg-surface border-b border-fg/10 px-5 py-3 flex-row items-center gap-3">
         <Pressable
           onPress={() => router.back()}
-          className="w-8 h-8 items-center justify-center border-2 border-fg rounded-[3px] bg-bg"
-          style={brutShadowSm}
+          className="py-1"
         >
-          <Text className="font-mono text-[14px] text-fg">←</Text>
+          <Text className="text-[15px] font-semibold text-accent">← Back</Text>
         </Pressable>
-        <View>
+        <View className="flex-1">
           <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg leading-none">
             New Log
           </Text>
-          <Text className="text-[11px] text-muted">
+          <Text className="text-[12px] text-muted mt-0.5">
             For {activePet.name}
           </Text>
         </View>
@@ -46,7 +44,7 @@ export default function LogPage() {
       >
         <ScrollView
           className="flex-1"
-          contentContainerClassName="p-4 max-w-lg self-center w-full"
+          contentContainerClassName="px-5 py-4"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >

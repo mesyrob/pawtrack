@@ -17,7 +17,7 @@ export default function Card({ children, className = '', size = 'md', onPress }:
       <Pressable onPress={onPress}>
         {({ pressed }) => (
           <View
-            className={`bg-surface border-[2.5px] border-fg rounded-[3px] p-5 ${className}`}
+            className={`bg-surface border-[2.5px] border-fg rounded-md p-5 ${className}`}
             style={pressed ? brutShadowPressed : shadow}
           >
             {children}
@@ -29,7 +29,7 @@ export default function Card({ children, className = '', size = 'md', onPress }:
 
   return (
     <View
-      className={`bg-surface border-[2.5px] border-fg rounded-[3px] p-5 ${className}`}
+      className={`bg-surface border-[2.5px] border-fg rounded-md p-5 ${className}`}
       style={shadow}
     >
       {children}

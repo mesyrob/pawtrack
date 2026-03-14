@@ -22,17 +22,17 @@ export default function RecentLogs({ logs }: { logs: LogEntry[] }) {
 
   if (sorted.length === 0) {
     return (
-      <View className="border-[2.5px] border-fg rounded-[3px] p-5 bg-surface items-center" style={brutShadowSm}>
-        <Text className="font-mono text-[13px] text-muted">No logs yet.</Text>
+      <View className="border-[2.5px] border-fg rounded-lg p-5 bg-surface items-center" style={brutShadowSm}>
+        <Text className="text-[14px] font-semibold text-muted">No logs yet.</Text>
         <Text className="text-[12px] text-muted mt-1">
-          Start by tapping "LOG SOMETHING" below.
+          Start by tapping "Log Something" below.
         </Text>
       </View>
     )
   }
 
   return (
-    <View className="border-[2.5px] border-fg rounded-[3px] overflow-hidden" style={brutShadowSm}>
+    <View className="border-[2.5px] border-fg rounded-lg overflow-hidden" style={brutShadowSm}>
       <View className="bg-fg px-4 py-2.5">
         <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
           Recent Logs
@@ -41,10 +41,10 @@ export default function RecentLogs({ logs }: { logs: LogEntry[] }) {
       {sorted.map((log, index) => (
         <View
           key={log.id}
-          className={`flex-row items-start gap-3 px-4 py-3 bg-surface ${index > 0 ? 'border-t-2 border-fg' : ''}`}
+          className={`flex-row items-start gap-3 px-4 py-4 bg-surface ${index > 0 ? 'border-t border-fg/15' : ''}`}
         >
           <View
-            className="mt-1 w-2.5 h-2.5 border border-fg rounded-[2px]"
+            className="mt-1.5 w-3 h-3 rounded-full"
             style={{ backgroundColor: typeColors[log.type] ?? '#8A8570' }}
           />
           <View className="flex-1">

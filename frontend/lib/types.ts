@@ -32,6 +32,14 @@ export interface Pet {
   createdAt: string
 }
 
+export interface BreedDetectionResult {
+  species: Species
+  breed: string
+  color: string
+  size: PetSize
+  confidence: number
+}
+
 export interface LogEntry {
   id: string
   petId: string

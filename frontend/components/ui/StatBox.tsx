@@ -12,17 +12,17 @@ interface StatBoxProps {
 export default function StatBox({ label, value, sub, color = '#FFE03D' }: StatBoxProps) {
   return (
     <View
-      className="flex-1 border-[2.5px] border-fg rounded-[3px] p-3 gap-1"
+      className="flex-1 border-[2.5px] border-fg rounded-md p-4 gap-1"
       style={[brutShadowSm, { backgroundColor: color }]}
     >
-      <Text className="font-mono uppercase text-[9px] tracking-[1.5px] text-fg opacity-70">
+      <Text className="text-[10px] font-semibold text-fg/60 uppercase tracking-wide">
         {label}
       </Text>
       <Text className="font-mono text-2xl leading-none text-fg">
         {value}
       </Text>
       {sub && (
-        <Text className="text-[11px] text-fg opacity-70">{sub}</Text>
+        <Text className="text-[11px] text-fg/60">{sub}</Text>
       )}
     </View>
   )

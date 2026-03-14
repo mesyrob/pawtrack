@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, Pressable } from 'react-native'
 import { Species } from '@/lib/types'
-import { brutShadowSm, brutShadowPressed, colors } from '@/lib/theme'
+import { brutShadowSubtle, colors } from '@/lib/theme'
+import { hapticTap } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
@@ -31,7 +32,7 @@ export default function StepPetBasics({ data, onChange, onNext, onBack }: StepPe
   const isValid = data.name.trim().length > 0 && data.species && data.breed
 
   return (
-    <View className="gap-6">
+    <View className="gap-7">
       <View>
         <Text className="font-mono text-xl uppercase tracking-[2px] text-fg mb-1">Meet your pet</Text>
         <Text className="text-muted text-sm">Tell us a little about them.</Text>
@@ -44,26 +45,28 @@ export default function StepPetBasics({ data, onChange, onNext, onBack }: StepPe
           {speciesOptions.map((s) => (
             <Pressable
               key={s.value}
-              onPress={() => onChange({ ...data, species: s.value, breed: '' })}
+              onPress={() => {
+                hapticTap()
+                onChange({ ...data, species: s.value, breed: '' })
+              }}
             >
-              {({ pressed }) => (
-                <View
-                  className="flex-row items-center gap-2 px-4 py-2 border-2 border-fg rounded-[3px]"
-                  style={[
-                    {
-                      backgroundColor: data.species === s.value ? colors.accent : colors.surface,
-                    },
-                    pressed ? brutShadowPressed : brutShadowSm,
-                  ]}
+              <View
+                className="flex-row items-center gap-2 px-4 py-2.5 border-[1.5px] rounded-lg"
+                style={[
+                  {
+                    backgroundColor: data.species === s.value ? colors.accent : colors.surface,
+                    borderColor: data.species === s.value ? colors.accent : 'rgba(26,26,26,0.3)',
+                  },
+                  data.species === s.value ? brutShadowSubtle : undefined,
+                ]}
+              >
+                <Text>{s.emoji}</Text>
+                <Text
+                  className={`text-[14px] font-semibold ${data.species === s.value ? 'text-white' : 'text-fg'}`}
                 >
-                  <Text>{s.emoji}</Text>
-                  <Text
-                    className={`font-mono uppercase text-[11px] tracking-[1.5px] ${data.species === s.value ? 'text-white' : 'text-fg'}`}
-                  >
-                    {s.label}
-                  </Text>
-                </View>
-              )}
+                  {s.label}
+                </Text>
+              </View>
             </Pressable>
           ))}
         </View>
@@ -90,7 +93,7 @@ export default function StepPetBasics({ data, onChange, onNext, onBack }: StepPe
         <Button variant="ghost" onPress={onBack}>← Back</Button>
         <View className="flex-1">
           <Button variant="accent" fullWidth onPress={onNext} disabled={!isValid}>
-            Continue →
+            Continue
           </Button>
         </View>
       </View>

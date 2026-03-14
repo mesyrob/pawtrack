@@ -4,7 +4,8 @@ import { useRouter } from 'expo-router'
 import { usePets } from '@/contexts/PetContext'
 import { LogType } from '@/lib/types'
 import { generateId } from '@/lib/utils'
-import { brutShadow, brutShadowSm, brutShadowPressed, colors } from '@/lib/theme'
+import { brutShadowSubtle, colors } from '@/lib/theme'
+import { hapticTap, hapticSuccess } from '@/lib/haptics'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import TextArea from '@/components/ui/TextArea'
@@ -59,6 +60,7 @@ export default function LogForm() {
   function handleSubmit() {
     if (!canSubmit || !activePet) return
 
+    hapticSuccess()
     addLog({
       id: generateId(),
       petId: activePet.id,
@@ -95,24 +97,27 @@ export default function LogForm() {
                 <Pressable
                   key={t.value}
                   onPress={() => {
+                    hapticTap()
                     setType(t.value)
                     if (!title) setTitle(t.label)
                   }}
+                  className="flex-1"
                 >
-                  {({ pressed }) => (
-                    <View
-                      className={`flex-1 flex-row items-center gap-2 px-3 py-2.5 border-2 border-fg rounded-[3px]`}
-                      style={[
-                        { backgroundColor: type === t.value ? t.color : colors.surface },
-                        pressed ? brutShadowPressed : brutShadowSm,
-                      ]}
-                    >
-                      <Text className="text-lg">{t.emoji}</Text>
-                      <Text className="font-mono uppercase text-[11px] tracking-[1px] text-fg">
-                        {t.label}
-                      </Text>
-                    </View>
-                  )}
+                  <View
+                    className="flex-row items-center gap-2 px-4 py-3 border-[1.5px] rounded-lg"
+                    style={[
+                      {
+                        backgroundColor: type === t.value ? t.color : colors.surface,
+                        borderColor: type === t.value ? t.color : 'rgba(26,26,26,0.15)',
+                      },
+                      type === t.value ? brutShadowSubtle : undefined,
+                    ]}
+                  >
+                    <Text className="text-lg">{t.emoji}</Text>
+                    <Text className={`text-[13px] font-semibold ${type === t.value ? 'text-fg' : 'text-fg/70'}`}>
+                      {t.label}
+                    </Text>
+                  </View>
                 </Pressable>
               ))}
             </View>
@@ -148,18 +153,21 @@ export default function LogForm() {
                     value={weight}
                     onChangeText={setWeight}
                     placeholderTextColor={colors.muted}
-                    className="bg-surface border-[2.5px] border-fg rounded-[3px] px-3.5 py-2.5 text-[15px] text-fg"
-                    style={brutShadow}
+                    className="bg-surface border-[1.5px] border-fg/40 rounded-md px-3.5 py-3 text-[15px] text-fg"
+                    style={brutShadowSubtle}
                   />
                 </View>
-                <View className="flex-row border-2 border-fg rounded-[3px] overflow-hidden" style={brutShadowSm}>
+                <View className="flex-row bg-fg/5 rounded-lg overflow-hidden">
                   {(['kg', 'lbs'] as const).map((u) => (
                     <Pressable
                       key={u}
-                      onPress={() => setWeightUnit(u)}
-                      className={`px-4 justify-center ${weightUnit === u ? 'bg-fg' : 'bg-surface'}`}
+                      onPress={() => {
+                        hapticTap()
+                        setWeightUnit(u)
+                      }}
+                      className={`px-5 justify-center rounded-lg ${weightUnit === u ? 'bg-fg' : ''}`}
                     >
-                      <Text className={`font-mono uppercase text-[11px] tracking-wider ${weightUnit === u ? 'text-bg' : 'text-fg'}`}>
+                      <Text className={`text-[13px] font-semibold ${weightUnit === u ? 'text-bg' : 'text-fg/50'}`}>
                         {u}
                       </Text>
                     </Pressable>

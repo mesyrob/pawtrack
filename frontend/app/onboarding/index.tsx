@@ -1,18 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import Animated, { SlideInRight, SlideOutLeft } from 'react-native-reanimated'
 import { usePets } from '@/contexts/PetContext'
-import { Pet, Species, Sex, PetSize } from '@/lib/types'
+import { Pet, Species, Sex, PetSize, BreedDetectionResult } from '@/lib/types'
 import { generateId } from '@/lib/utils'
 import ProgressBar from '@/components/ui/ProgressBar'
 import StepWelcome from '@/components/onboarding/StepWelcome'
+import StepPhotoCapture from '@/components/onboarding/StepPhotoCapture'
 import StepPetBasics from '@/components/onboarding/StepPetBasics'
 import StepPetDetails from '@/components/onboarding/StepPetDetails'
 import StepHealthConfig from '@/components/onboarding/StepHealthConfig'
 import StepConfirmation from '@/components/onboarding/StepConfirmation'
 
-const TOTAL_STEPS = 5
+const TOTAL_STEPS = 6
 
 interface PetDraft {
   name: string
@@ -24,6 +26,7 @@ interface PetDraft {
   weight: string
   weightUnit: 'kg' | 'lbs'
   color: string
+  photoUri: string
   vaccinations: boolean
   deworming: boolean
   fleaTick: boolean
@@ -42,6 +45,7 @@ const initialDraft: PetDraft = {
   weight: '',
   weightUnit: 'kg',
   color: '',
+  photoUri: '',
   vaccinations: true,
   deworming: true,
   fleaTick: true,
@@ -64,6 +68,7 @@ export default function OnboardingPage() {
     sex: (draft.sex || 'male') as Sex,
     size: (draft.size || 'medium') as PetSize,
     color: draft.color,
+    photoUrl: draft.photoUri || undefined,
     vetClinic: draft.vetClinic || undefined,
     trackingConfig: {
       vaccinations: draft.vaccinations,
@@ -72,6 +77,16 @@ export default function OnboardingPage() {
       weight: draft.weightTracking,
       symptoms: draft.symptoms,
     },
+  }
+
+  function handleAnalysisComplete(result: BreedDetectionResult) {
+    setDraft((prev) => ({
+      ...prev,
+      species: result.species,
+      breed: result.breed,
+      color: result.color,
+      size: result.size,
+    }))
   }
 
   function handleConfirm() {
@@ -84,11 +99,91 @@ export default function OnboardingPage() {
     router.push('/dashboard')
   }
 
+  const renderStep = useCallback(() => {
+    switch (step) {
+      case 0:
+        return <StepWelcome onNext={() => setStep(1)} />
+      case 1:
+        return (
+          <StepPhotoCapture
+            photoUri={draft.photoUri}
+            onPhotoTaken={(uri) => setDraft((prev) => ({ ...prev, photoUri: uri }))}
+            onAnalysisComplete={handleAnalysisComplete}
+            onNext={() => setStep(2)}
+            onBack={() => setStep(0)}
+            onSkip={() => setStep(2)}
+          />
+        )
+      case 2:
+        return (
+          <StepPetBasics
+            data={{ name: draft.name, species: draft.species, breed: draft.breed }}
+            onChange={(d) => setDraft((prev) => ({ ...prev, ...d }))}
+            onNext={() => setStep(3)}
+            onBack={() => setStep(1)}
+          />
+        )
+      case 3:
+        return (
+          <StepPetDetails
+            data={{
+              birthday: draft.birthday,
+              sex: draft.sex,
+              size: draft.size,
+              weight: draft.weight,
+              weightUnit: draft.weightUnit,
+              color: draft.color,
+            }}
+            onChange={(d) => setDraft((prev) => ({ ...prev, ...d }))}
+            onNext={() => setStep(4)}
+            onBack={() => setStep(2)}
+          />
+        )
+      case 4:
+        return (
+          <StepHealthConfig
+            data={{
+              vaccinations: draft.vaccinations,
+              deworming: draft.deworming,
+              fleaTick: draft.fleaTick,
+              weight: draft.weightTracking,
+              symptoms: draft.symptoms,
+              vetClinic: draft.vetClinic,
+            }}
+            onChange={(d) =>
+              setDraft((prev) => ({
+                ...prev,
+                vaccinations: d.vaccinations,
+                deworming: d.deworming,
+                fleaTick: d.fleaTick,
+                weightTracking: d.weight,
+                symptoms: d.symptoms,
+                vetClinic: d.vetClinic,
+              }))
+            }
+            onNext={() => setStep(5)}
+            onBack={() => setStep(3)}
+          />
+        )
+      case 5:
+        return (
+          <StepConfirmation
+            pet={petPreview}
+            photoUri={draft.photoUri || undefined}
+            onConfirm={handleConfirm}
+            onBack={() => setStep(4)}
+          />
+        )
+      default:
+        return null
+    }
+  }, [step, draft])
+
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       {/* Top bar */}
-      <View className="flex-row items-center justify-between px-4 py-4 border-b-2 border-fg bg-surface">
-        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">🐾 PawTrack</Text>
+      <View className="flex-row items-center justify-between px-5 py-4 border-b border-fg/10 bg-surface">
+        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">PawTrack</Text>
         {step > 0 && <ProgressBar total={TOTAL_STEPS} current={step} />}
       </View>
 
@@ -99,68 +194,17 @@ export default function OnboardingPage() {
       >
         <ScrollView
           className="flex-1"
-          contentContainerClassName="items-center"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View className="w-full max-w-md p-6">
-            {step === 0 && <StepWelcome onNext={() => setStep(1)} />}
-            {step === 1 && (
-              <StepPetBasics
-                data={{ name: draft.name, species: draft.species, breed: draft.breed }}
-                onChange={(d) => setDraft((prev) => ({ ...prev, ...d }))}
-                onNext={() => setStep(2)}
-                onBack={() => setStep(0)}
-              />
-            )}
-            {step === 2 && (
-              <StepPetDetails
-                data={{
-                  birthday: draft.birthday,
-                  sex: draft.sex,
-                  size: draft.size,
-                  weight: draft.weight,
-                  weightUnit: draft.weightUnit,
-                  color: draft.color,
-                }}
-                onChange={(d) => setDraft((prev) => ({ ...prev, ...d }))}
-                onNext={() => setStep(3)}
-                onBack={() => setStep(1)}
-              />
-            )}
-            {step === 3 && (
-              <StepHealthConfig
-                data={{
-                  vaccinations: draft.vaccinations,
-                  deworming: draft.deworming,
-                  fleaTick: draft.fleaTick,
-                  weight: draft.weightTracking,
-                  symptoms: draft.symptoms,
-                  vetClinic: draft.vetClinic,
-                }}
-                onChange={(d) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    vaccinations: d.vaccinations,
-                    deworming: d.deworming,
-                    fleaTick: d.fleaTick,
-                    weightTracking: d.weight,
-                    symptoms: d.symptoms,
-                    vetClinic: d.vetClinic,
-                  }))
-                }
-                onNext={() => setStep(4)}
-                onBack={() => setStep(2)}
-              />
-            )}
-            {step === 4 && (
-              <StepConfirmation
-                pet={petPreview}
-                onConfirm={handleConfirm}
-                onBack={() => setStep(3)}
-              />
-            )}
-          </View>
+          <Animated.View
+            key={step}
+            entering={SlideInRight.duration(300)}
+            exiting={SlideOutLeft.duration(200)}
+            className="w-full px-5 pt-6 pb-4"
+          >
+            {renderStep()}
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

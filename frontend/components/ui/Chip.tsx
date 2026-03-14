@@ -1,6 +1,7 @@
 import React from 'react'
 import { Pressable, Text, View } from 'react-native'
-import { brutShadowSm, brutShadowPressed } from '@/lib/theme'
+import { brutShadowSubtle } from '@/lib/theme'
+import { hapticTap } from '@/lib/haptics'
 
 interface ChipProps {
   label: string
@@ -11,20 +12,26 @@ interface ChipProps {
 
 export default function Chip({ label, active = false, color = '#FFE03D', onPress }: ChipProps) {
   return (
-    <Pressable onPress={onPress}>
-      {({ pressed }) => (
-        <View
-          className="px-3 py-1.5 border-2 border-fg rounded-[3px]"
-          style={[
-            { backgroundColor: active ? color : '#FFFFFF' },
-            pressed ? brutShadowPressed : brutShadowSm,
-          ]}
-        >
-          <Text className="font-mono uppercase text-[10px] tracking-[1.5px] text-fg">
-            {label}
-          </Text>
-        </View>
-      )}
+    <Pressable
+      onPress={() => {
+        hapticTap()
+        onPress?.()
+      }}
+    >
+      <View
+        className="px-4 py-2 border-[1.5px] rounded-lg"
+        style={[
+          {
+            backgroundColor: active ? color : '#FFFFFF',
+            borderColor: active ? color : 'rgba(26,26,26,0.3)',
+          },
+          active ? brutShadowSubtle : undefined,
+        ]}
+      >
+        <Text className={`text-[13px] font-semibold ${active ? 'text-fg' : 'text-fg/70'}`}>
+          {label}
+        </Text>
+      </View>
     </Pressable>
   )
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import { brutShadowSm } from '@/lib/theme'
+import { brutShadowSubtle } from '@/lib/theme'
 import Input from '@/components/ui/Input'
 import Toggle from '@/components/ui/Toggle'
 import Button from '@/components/ui/Button'
@@ -39,14 +39,14 @@ export default function StepHealthConfig({ data, onChange, onNext, onBack }: Ste
         </Text>
       </View>
 
-      <View className="border-[2.5px] border-fg rounded-[3px] p-4 bg-surface" style={brutShadowSm}>
+      <View className="border-[1.5px] border-fg/20 rounded-lg p-4 bg-surface" style={brutShadowSubtle}>
         {trackingItems.map((item, index) => (
           <View
             key={item.key}
-            className={`flex-row items-center justify-between py-3 ${index > 0 ? 'border-t-2 border-fg' : ''}`}
+            className={`flex-row items-center justify-between py-4 ${index > 0 ? 'border-t border-fg/15' : ''}`}
           >
             <View className="flex-1 mr-3">
-              <Text className="font-mono uppercase text-[11px] tracking-[1.5px] text-fg">{item.label}</Text>
+              <Text className="text-[14px] font-semibold text-fg">{item.label}</Text>
               <Text className="text-[12px] text-muted">{item.desc}</Text>
             </View>
             <Toggle
@@ -67,7 +67,7 @@ export default function StepHealthConfig({ data, onChange, onNext, onBack }: Ste
       <View className="flex-row gap-3 mt-2">
         <Button variant="ghost" onPress={onBack}>← Back</Button>
         <View className="flex-1">
-          <Button variant="accent" fullWidth onPress={onNext}>Continue →</Button>
+          <Button variant="accent" fullWidth onPress={onNext}>Continue</Button>
         </View>
       </View>
     </View>

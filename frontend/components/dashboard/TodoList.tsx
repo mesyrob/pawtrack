@@ -3,7 +3,7 @@ import { View, Text, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { LogEntry, Pet } from '@/lib/types'
 import { daysSince, formatDate } from '@/lib/utils'
-import { brutShadowSm, colors } from '@/lib/theme'
+import { brutShadowSm } from '@/lib/theme'
 
 interface TodoItem {
   label: string
@@ -80,7 +80,7 @@ export default function TodoList({ pet, logs }: { pet: Pet; logs: LogEntry[] }) 
   if (todos.length === 0) return null
 
   return (
-    <View className="border-[2.5px] border-fg rounded-[3px] overflow-hidden" style={brutShadowSm}>
+    <View className="border-[2.5px] border-fg rounded-lg overflow-hidden" style={brutShadowSm}>
       <View className="bg-fg px-4 py-2.5">
         <Text className="font-mono text-[11px] uppercase tracking-[2px] text-bg">
           Health Checklist
@@ -91,7 +91,7 @@ export default function TodoList({ pet, logs }: { pet: Pet; logs: LogEntry[] }) 
         return (
           <View
             key={todo.label}
-            className={`flex-row items-center justify-between px-4 py-3 bg-surface ${index > 0 ? 'border-t-2 border-fg' : ''}`}
+            className={`flex-row items-center justify-between px-4 py-4 bg-surface ${index > 0 ? 'border-t border-fg/15' : ''}`}
           >
             <View>
               <Text className="font-semibold text-sm text-fg">{todo.label}</Text>
@@ -102,19 +102,19 @@ export default function TodoList({ pet, logs }: { pet: Pet; logs: LogEntry[] }) 
               </Text>
             </View>
             <View
-              className="px-2.5 py-1 border border-fg rounded-[2px]"
+              className="px-2.5 py-1 rounded-md"
               style={{ backgroundColor: cfg.bg }}
             >
-              <Text className="font-mono uppercase text-[9px] tracking-[1.5px] text-fg">
+              <Text className="text-[10px] font-bold text-fg">
                 {cfg.label}
               </Text>
             </View>
           </View>
         )
       })}
-      <View className="px-4 py-3 bg-field-bg border-t-2 border-fg">
+      <View className="px-4 py-3 bg-field-bg border-t border-fg/15">
         <Pressable onPress={() => router.push('/log')}>
-          <Text className="font-mono uppercase text-[10px] tracking-[1.5px] text-accent underline">
+          <Text className="text-[13px] font-semibold text-accent">
             + Log something now
           </Text>
         </Pressable>

@@ -1,0 +1,131 @@
+# Deploy with:
+#   aws cloudformation deploy \
+#     --template-file infra/github-oidc.cfn.yml \
+#     --stack-name pawtrack-github-oidc \
+#     --capabilities CAPABILITY_NAMED_IAM
+#
+# NOTE: AWS allows only one OIDC provider per issuer URL per account.
+# If another stack already created the GitHub OIDC provider, remove the
+# GitHubOIDCProvider resource and pass the existing provider ARN as a
+# parameter instead.
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: GitHub OIDC provider and IAM deploy role for PawTrack CI/CD
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Default: mesyrob
+  GitHubRepo:
+    Type: String
+    Default: pawtrack
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+
+Resources:
+  GitHubOIDCProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "pawtrack-github-deploy-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !GetAtt GitHubOIDCProvider.Arn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub "repo:${GitHubOrg}/${GitHubRepo}:*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/AmazonAPIGatewayAdministrator
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+      Policies:
+        - PolicyName: pawtrack-iam-and-terraform
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: IAMForServiceRoles
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:GetRole
+                  - iam:PassRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:UpdateRole
+                  - iam:UpdateAssumeRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:GetRolePolicy
+                  - iam:ListRolePolicies
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListInstanceProfilesForRole
+                  - iam:CreatePolicy
+                  - iam:DeletePolicy
+                  - iam:GetPolicy
+                  - iam:GetPolicyVersion
+                  - iam:ListPolicyVersions
+                  - iam:CreatePolicyVersion
+                  - iam:DeletePolicyVersion
+                Resource:
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:role/pawtrack-*"
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:policy/pawtrack-*"
+              - Sid: IAMReadOnly
+                Effect: Allow
+                Action:
+                  - iam:ListRoles
+                  - iam:ListPolicies
+                Resource: "*"
+              - Sid: TerraformStateAccess
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource:
+                  - !Sub "arn:aws:s3:::pawtrack-tfstate-${Environment}"
+                  - !Sub "arn:aws:s3:::pawtrack-tfstate-${Environment}/*"
+              - Sid: TerraformLocking
+                Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/pawtrack-tflock-${Environment}"
+      Tags:
+        - Key: Project
+          Value: pawtrack
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: ManagedBy
+          Value: cloudformation
+
+Outputs:
+  RoleArn:
+    Description: IAM role ARN — set this as the AWS_ROLE_ARN secret in GitHub
+    Value: !GetAtt GitHubDeployRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-RoleArn"

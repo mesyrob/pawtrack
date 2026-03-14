@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { usePets } from '@/contexts/PetContext'
 import { daysSince } from '@/lib/utils'
 import { LogEntry } from '@/lib/types'
-import { colors, brutShadow } from '@/lib/theme'
+import { colors } from '@/lib/theme'
+import { hapticTap } from '@/lib/haptics'
 import StatBox from '@/components/ui/StatBox'
 import PetCard from '@/components/dashboard/PetCard'
+import WalkingDog from '@/components/dashboard/WalkingDog'
 import TodoList from '@/components/dashboard/TodoList'
 import RecentLogs from '@/components/dashboard/RecentLogs'
 import Button from '@/components/ui/Button'
@@ -66,18 +68,21 @@ export default function DashboardPage() {
   return (
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       {/* Header */}
-      <View className="bg-surface border-b-2 border-fg px-4 py-3 flex-row items-center justify-between">
-        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">🐾 PawTrack</Text>
+      <View className="bg-surface border-b border-fg/10 px-5 py-3 flex-row items-center justify-between">
+        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">PawTrack</Text>
         {pets.length > 1 && (
-          <View className="flex-row gap-1">
+          <View className="flex-row gap-1.5 bg-fg/5 rounded-lg p-1">
             {pets.map((p) => (
               <Pressable
                 key={p.id}
-                onPress={() => setActivePet(p)}
-                className={`px-3 py-1 border-2 border-fg rounded-[2px] ${activePet.id === p.id ? 'bg-fg' : 'bg-surface'}`}
+                onPress={() => {
+                  hapticTap()
+                  setActivePet(p)
+                }}
+                className={`px-3 py-1.5 rounded-lg ${activePet.id === p.id ? 'bg-fg' : ''}`}
               >
                 <Text
-                  className={`font-mono text-[10px] uppercase tracking-[1px] ${activePet.id === p.id ? 'text-bg' : 'text-fg'}`}
+                  className={`text-[12px] font-semibold ${activePet.id === p.id ? 'text-bg' : 'text-fg/60'}`}
                 >
                   {p.name}
                 </Text>
@@ -85,17 +90,29 @@ export default function DashboardPage() {
             ))}
           </View>
         )}
-        <Pressable onPress={() => router.push('/onboarding')}>
-          <Text className="font-mono uppercase text-[10px] tracking-[1.5px] text-muted underline">+ Pet</Text>
+        <Pressable
+          onPress={() => {
+            hapticTap()
+            router.push('/onboarding')
+          }}
+        >
+          <Text className="text-[13px] font-semibold text-accent">+ Pet</Text>
         </Pressable>
       </View>
 
       {/* Main content */}
       <ScrollView
         className="flex-1"
-        contentContainerClassName="p-4 gap-4 pb-32 max-w-lg self-center w-full"
+        contentContainerClassName="px-5 pt-4 gap-5 pb-36"
         showsVerticalScrollIndicator={false}
       >
+        {activePet.species === 'dog' && (
+          <WalkingDog
+            breed={activePet.breed}
+            size={activePet.size}
+            color={activePet.color}
+          />
+        )}
         <PetCard pet={activePet} />
 
         {/* Stats row */}
@@ -125,12 +142,10 @@ export default function DashboardPage() {
       </ScrollView>
 
       {/* FAB */}
-      <View className="absolute bottom-6 left-4 right-4 items-center">
-        <View className="w-full max-w-lg">
-          <Button variant="accent" size="lg" fullWidth onPress={() => router.push('/log')}>
-            + Log Something
-          </Button>
-        </View>
+      <View className="absolute bottom-6 left-5 right-5 items-center">
+        <Button variant="accent" size="lg" fullWidth onPress={() => router.push('/log')}>
+          + Log Something
+        </Button>
       </View>
     </SafeAreaView>
   )
