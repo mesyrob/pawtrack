@@ -25,6 +25,29 @@ Parameters:
     AllowedValues: [dev, staging, prod]
 
 Resources:
+  TerraformStateBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "pawtrack-tfstate-${Environment}"
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: pawtrack
+        - Key: Environment
+          Value: !Ref Environment
+
   GitHubOIDCProvider:
     Type: AWS::IAM::OIDCProvider
     Properties:
@@ -107,14 +130,6 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:s3:::pawtrack-tfstate-${Environment}"
                   - !Sub "arn:aws:s3:::pawtrack-tfstate-${Environment}/*"
-              - Sid: TerraformLocking
-                Effect: Allow
-                Action:
-                  - dynamodb:GetItem
-                  - dynamodb:PutItem
-                  - dynamodb:DeleteItem
-                Resource:
-                  - !Sub "arn:aws:dynamodb:*:${AWS::AccountId}:table/pawtrack-tflock-${Environment}"
       Tags:
         - Key: Project
           Value: pawtrack
@@ -129,3 +144,6 @@ Outputs:
     Value: !GetAtt GitHubDeployRole.Arn
     Export:
       Name: !Sub "${AWS::StackName}-RoleArn"
+  StateBucketName:
+    Description: S3 bucket for Terraform state
+    Value: !Ref TerraformStateBucket

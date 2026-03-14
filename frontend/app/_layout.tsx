@@ -36,7 +36,6 @@ export default function RootLayout() {
             gestureDirection: 'vertical',
           }}
         />
-        <Stack.Screen name="onboarding" />
       </Stack>
     </PetProvider>
   )
