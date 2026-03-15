@@ -26,7 +26,8 @@ Use `/review-conventions`, `/review-dotnet`, `/review-frontend`, `/review-tests`
 ## Git Workflow
 - When the user says "commit", treat it as `/commit` — always run the skill
 - Use `/commit` to commit — it auto-updates the codebase map
-- Do NOT add "Co-Authored-By" or AI attribution to commit messages
+- Do NOT add AI attribution to commit messages
+- ALWAYS add Co-Authored-By trailers for Alken Rrokaj and mesyrob (see `/commit` skill)
 - Do NOT push unless explicitly asked
 - Stage specific files, never `git add -A`
 

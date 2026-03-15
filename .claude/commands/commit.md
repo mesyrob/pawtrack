@@ -26,7 +26,12 @@ If this session involved significant decisions, new patterns, or debugging insig
 - Do NOT commit files with secrets (.env, credentials)
 - Do NOT use `git add -A` — stage specific files by name
 - Use a HEREDOC for the commit message to preserve formatting
-- Do NOT add "Co-Authored-By" or any AI attribution to commit messages
+- Do NOT add AI attribution to commit messages
+- ALWAYS add the following Co-Authored-By trailers at the end of every commit message:
+  ```
+  Co-Authored-By: Alken Rrokaj <rrokajalken@gmail.com>
+  Co-Authored-By: mesyrob <mesyrob@users.noreply.github.com>
+  ```
 - If a pre-commit hook fails, fix the issue and create a NEW commit (don't amend)
 
 $ARGUMENTS
