@@ -164,16 +164,8 @@ export function PetProvider({ children }: { children: React.ReactNode }) {
         setPets(storedPets)
         setLogs(storedLogs)
         setActivePet(storedPets[0])
-      } else {
-        // Seed default data
-        await storage.savePet(DEFAULT_PET)
-        for (const log of DEFAULT_LOGS) {
-          await storage.saveLog(log)
-        }
-        setPets([DEFAULT_PET])
-        setLogs(DEFAULT_LOGS)
-        setActivePet(DEFAULT_PET)
       }
+      // No pets → leave empty so the app routes to onboarding
 
       setIsLoaded(true)
     }

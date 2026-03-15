@@ -96,7 +96,7 @@ export default function OnboardingPage() {
       createdAt: new Date().toISOString(),
     }
     addPet(pet)
-    router.push('/dashboard')
+    router.replace('/(tabs)')
   }
 
   const renderStep = useCallback(() => {
@@ -183,7 +183,7 @@ export default function OnboardingPage() {
     <SafeAreaView className="flex-1 bg-bg" edges={['top']}>
       {/* Top bar */}
       <View className="flex-row items-center justify-between px-5 py-4 border-b border-fg/10 bg-surface">
-        <Text className="font-mono text-[14px] uppercase tracking-[2px] text-fg">PawTrack</Text>
+        <Text className="text-[15px] font-bold text-fg">PawTrack</Text>
         {step > 0 && <ProgressBar total={TOTAL_STEPS} current={step} />}
       </View>
 
